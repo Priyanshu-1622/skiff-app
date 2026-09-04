@@ -1,6 +1,7 @@
 {
   "name": "@skiff/desktop",
   "version": "1.0.0",
+  "license": "AGPL-3.0-only",
   "description": "Skiff desktop application — native SSH connection manager and access governance.",
   "private": true,
   "type": "module",
@@ -52,7 +53,7 @@
     "publish": [
       {
         "provider": "generic",
-        "url": "https://skiffssh.me/updates/${os}/${arch}",
+        "url": "https://dl.skiffssh.me",
         "channel": "latest"
       }
     ],
