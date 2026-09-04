@@ -54,6 +54,20 @@ jobs:
           node-version: "20.x"
           cache: pnpm
 
+      # node-gyp (used to compile better-sqlite3, argon2, cpu-features) still
+      # imports distutils internally, which Python removed in 3.12. GitHub's
+      # runner images default to 3.12+ now, on every OS — which is exactly
+      # why this broke identically on Windows, macOS and Linux at once rather
+      # than looking like a platform-specific problem. Pinning to 3.11 here
+      # is enough: actions/setup-python puts it first on PATH on all three
+      # platforms, so node-gyp's own auto-detection finds it with no further
+      # config — no manual python path needed, which matters because a
+      # hand-built path breaks on Windows anyway (no bin/ subdirectory there).
+      - name: Set up Python (node-gyp needs distutils, removed in 3.12)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       # Full install WITH build scripts: unlike the CI typecheck job, the
       # native modules genuinely have to compile here.
       - name: Install dependencies

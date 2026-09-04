@@ -22,6 +22,14 @@ jobs:
         with:
           node-version: "20.x"
 
+      # node-gyp still imports distutils, which Python removed in 3.12 —
+      # GitHub's runner images now default to 3.12+. Same fix as the release
+      # workflow; see the comment there for the full explanation.
+      - name: Set up Python (node-gyp needs distutils, removed in 3.12)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       # Native modules (better-sqlite3, argon2, ssh2) compile here because
       # pnpm-workspace.yaml allows their build scripts.
       - name: Install dependencies
