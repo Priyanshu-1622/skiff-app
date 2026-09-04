@@ -1,0 +1,298 @@
+/* ============================================================
+   TUNNELS
+   ============================================================ */
+
+.tn-table { margin-top: 6px; }
+
+.tn-head,
+.tn-row {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr) 180px 110px 140px;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+}
+
+.tn-head {
+  height: 34px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+}
+.tn-head .num,
+.tn-row .num { text-align: right; }
+
+.tn-row {
+  min-height: 52px;
+  border-bottom: 1px solid var(--border);
+}
+.tn-row:hover { background: var(--bg-1); }
+.tn-row.is-error { background: var(--status-error-bg); }
+
+.tn-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-2);
+  color: var(--fg-1);
+}
+.tn-badge.is-local {
+  background: color-mix(in oklab, var(--accent-500) 14%, transparent);
+  border-color: color-mix(in oklab, var(--accent-500) 38%, transparent);
+  color: var(--accent-400);
+}
+.tn-badge.is-remote {
+  background: var(--status-connecting-bg);
+  border-color: color-mix(in oklab, var(--status-connecting) 38%, transparent);
+  color: var(--status-connecting);
+}
+
+.tn-route {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  overflow: hidden;
+}
+.tn-route code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--fg-0);
+  white-space: nowrap;
+}
+.tn-route svg { color: var(--fg-2); flex: none; }
+.tn-route__via {
+  font-size: 11.5px;
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+
+.tn-host {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tn-conns {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--fg-0);
+}
+
+.tn-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.tn-msg { color: var(--status-connecting); display: grid; place-items: center; }
+
+.tn-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 80px 24px;
+  text-align: center;
+  color: var(--fg-1);
+  font-size: 13.5px;
+}
+.tn-empty svg { color: var(--fg-3); }
+.tn-empty__hint {
+  max-width: 440px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--fg-2);
+}
+
+/* ─── Dialog ───────────────────────────────────────────────── */
+
+.tn-dialog {
+  width: 560px;
+  max-width: 100%;
+  /* Head and footer stay put; the form between them scrolls. The dialog
+     clips its overflow, so without this the footer sat below the fold on a
+     short window with no way to scroll to it — the primary button of the
+     dialog, unreachable. */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
+}
+.tn-dialog .tn-form {
+  overflow-y: auto;
+  min-height: 0;
+}
+.tn-dialog .dialog__head,
+.tn-dialog .dialog__foot {
+  flex: none;
+}
+/* Horizontal padding matches .dialog__head and .dialog__foot (20px), so
+   the body lines up with the title and the buttons. */
+.tn-form { padding: 4px 20px 8px; }
+
+.tn-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+  margin: 16px 0 7px;
+}
+.tn-form > .tn-label:first-child { margin-top: 4px; }
+
+/* Direction is explained in words rather than shown as -L / -R. Getting it
+   backwards is the most common forwarding mistake, and it fails in a way that
+   looks like a broken network. */
+.tn-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.tn-choice button {
+  display: grid;
+  gap: 5px;
+  padding: 12px 13px;
+  text-align: left;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+}
+.tn-choice button:hover { border-color: var(--border-strong); }
+.tn-choice button.is-active {
+  border-color: var(--accent-500);
+  background: color-mix(in oklab, var(--accent-500) 10%, transparent);
+}
+.tn-choice strong { font-size: 12.5px; font-weight: 600; color: var(--fg-0); }
+.tn-choice span { font-size: 11.5px; line-height: 1.45; color: var(--fg-1); }
+
+.tn-field {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.tn-field:focus-within {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 22%, transparent);
+}
+.tn-field input,
+.tn-field select {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-size: 13px;
+  color: var(--fg-0);
+}
+.tn-field input.mono,
+.tn-field select { font-family: var(--font-mono); font-size: 12.5px; }
+.tn-field select { cursor: pointer; }
+.tn-field--pair .sep { color: var(--fg-2); padding: 0 6px; }
+.tn-field--pair .port { flex: 0 0 62px; }
+
+/* Listen port, destination host, destination port — three fields, three
+   boxes, three labels. The destination used to be two inputs sharing one
+   bordered box with a colon between them, which reads as a single host:port
+   field: the whole address went into the host half and the port half was
+   easy to miss entirely. */
+/* Where traffic arrives, on its own line; then where it goes. Three columns
+   across a 560px dialog clipped the last label and made the form scroll
+   sideways, and a port box has no use for half the width anyway. */
+.tn-listen .tn-field { max-width: 190px; }
+
+.tn-split.tn-split--dest {
+  grid-template-columns: 1fr 190px;
+}
+
+/* Grid items default to min-width:auto, which lets a long value push the
+   track wider than its share and overflow the dialog. */
+.tn-split > div { min-width: 0; }
+
+.tn-split {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 12px;
+}
+
+.tn-expose {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 12px 13px;
+  border-radius: var(--r-md);
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.tn-expose input { margin-top: 2px; accent-color: var(--accent-500); flex: none; }
+.tn-expose strong { display: block; font-size: 12.5px; color: var(--fg-0); }
+.tn-expose em {
+  display: block;
+  margin-top: 4px;
+  font-style: normal;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--fg-1);
+}
+
+/* Inline validation, shown as you type rather than on submit — a port field
+   is short enough that waiting until Open Tunnel to complain is annoying. */
+.tn-error {
+  /* The row is always in the layout and only its text is revealed, so a
+     message appearing mid-typing cannot shove the fields below it down. The
+     old rule pulled itself up by -10px, which sat it hard against the input
+     and read as part of the field rather than a note about it. */
+  margin: 6px 0 0;
+  min-height: 15px;
+  font-size: 11.5px;
+  line-height: 15px;
+  color: var(--status-error);
+  visibility: hidden;
+}
+.tn-error.is-shown { visibility: visible; }
+
+/* The field carries the error too. Red text under a field that still looks
+   normal makes you hunt for which one it means — with two port inputs side
+   by side, that matters. */
+.tn-field.is-invalid {
+  border-color: var(--status-error);
+}
+.tn-field.is-invalid:focus-within {
+  border-color: var(--status-error);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--status-error) 22%, transparent);
+}
+
+/* The server's reason for refusing a forward, shown under the row it belongs
+   to. It used to live only in the title attribute of a 12px warning icon —
+   findable if you already suspected it was there, invisible otherwise. */
+.tn-rowmsg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -2px 0 8px;
+  padding: 6px 10px;
+  border-radius: var(--r-md);
+  background: color-mix(in oklab, var(--status-error) 10%, transparent);
+  color: var(--status-error);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.tn-rowmsg svg { flex: none; }

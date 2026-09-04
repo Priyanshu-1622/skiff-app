@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!--
+    Hardened runtime is required for notarization, and it blocks things
+    Electron needs unless they are requested explicitly. Each entry below is
+    the minimum for a specific feature; nothing is here "just in case".
+  -->
+
+  <!-- Electron's V8 compiles JavaScript at runtime. Without these the app
+       will not launch at all under the hardened runtime. -->
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+
+  <!-- better-sqlite3 and argon2 are native modules loaded at runtime; they
+       are signed with the app but load dynamically. -->
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+
+  <!-- Outbound SSH connections, and the update check. -->
+  <key>com.apple.security.network.client</key>
+  <true/>
+
+  <!-- Local port forwarding binds a listening socket on this machine. -->
+  <key>com.apple.security.network.server</key>
+  <true/>
+
+  <!-- Reading ~/.ssh/config on first run, and the file manager's local pane.
+       User-selected rather than blanket disk access: Skiff should be able to
+       read the SSH config and whatever folder the user opens, not everything. -->
+  <key>com.apple.security.files.user-selected.read-write</key>
+  <true/>
+</dict>
+</plist>

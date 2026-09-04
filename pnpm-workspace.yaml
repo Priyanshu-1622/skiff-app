@@ -1,0 +1,21 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Native modules that are allowed to run their build scripts on install.
+# Without this, pnpm skips compilation and the API can't start
+# ("Could not locate the bindings file").
+# `allowBuilds` is the pnpm 11+ key; `onlyBuiltDependencies` covers pnpm 9/10.
+allowBuilds:
+  argon2: true
+  better-sqlite3: true
+  cpu-features: true
+  esbuild: true
+  ssh2: true
+
+onlyBuiltDependencies:
+  - argon2
+  - better-sqlite3
+  - cpu-features
+  - esbuild
+  - ssh2

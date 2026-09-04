@@ -1,0 +1,118 @@
+name: Desktop Release
+
+# Builds the Skiff desktop app for Windows, macOS and Linux.
+#
+# Native modules (better-sqlite3, argon2) must be compiled against Electron's
+# own Node ABI, and that compilation has to happen on the target OS — a macOS
+# build cannot be produced from Windows. Hence the matrix: each runner builds
+# its own platform's artifacts.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Attach artifacts to a draft release"
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Don't cancel the other platforms when one fails — a macOS signing
+      # problem shouldn't throw away a good Windows build.
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux
+            command: package:linux
+          - os: windows-latest
+            name: Windows
+            command: package:win
+          - os: macos-latest
+            name: macOS
+            command: package:mac
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: pnpm
+
+      # Full install WITH build scripts: unlike the CI typecheck job, the
+      # native modules genuinely have to compile here.
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build workspace packages
+        run: |
+          pnpm --filter @skiff/core build
+          pnpm --filter @skiff/shared build
+
+      - name: Rebuild native modules for Electron
+        working-directory: apps/desktop
+        run: pnpm exec electron-builder install-app-deps
+
+      - name: Package
+        working-directory: apps/desktop
+        run: pnpm ${{ matrix.command }} --publish never
+        env:
+          # Artifacts are distributed from skiffssh.me, not GitHub Releases, so
+          # nothing is published from here. --publish never keeps electron-builder
+          # from uploading anywhere; the files come back as workflow artifacts
+          # and get put on the site.
+          SKIFF_PUBLISH: "never"
+          # macOS signing. Absent on forks and first-time builds, in which
+          # case electron-builder produces an unsigned app — usable for
+          # testing, but Gatekeeper will warn end users.
+          CSC_LINK: ${{ secrets.MAC_CERT_P12 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # electron-builder notarizes only when all three Apple values are
+          # present. Without them the build still succeeds unsigned, which is
+          # what a fork or a first test build needs.
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.MAC_CERT_P12 != '' }}
+
+      # Checksums are published on the download page. A security tool that
+      # doesn't let people verify what they downloaded undercuts its own pitch,
+      # and generating them here means they always match the actual artifacts
+      # rather than being pasted by hand later.
+      - name: Generate checksums
+        working-directory: apps/desktop/release
+        shell: bash
+        run: |
+          for f in *.exe *.dmg *.AppImage *.deb; do
+            [ -e "$f" ] || continue
+            sha256sum "$f" >> SHA256SUMS.txt 2>/dev/null || shasum -a 256 "$f" >> SHA256SUMS.txt
+          done
+          cat SHA256SUMS.txt || echo "no artifacts to checksum"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: skiff-${{ matrix.name }}
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.AppImage
+            apps/desktop/release/*.deb
+            apps/desktop/release/*.blockmap
+            apps/desktop/release/latest*.yml
+            apps/desktop/release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14

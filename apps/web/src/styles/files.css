@@ -1,0 +1,371 @@
+/* ============================================================
+   FILE MANAGER — dual pane
+   Measured from the mockup: rows 28px with 6px/12px padding,
+   column headers 10px uppercase, paths in JetBrains Mono 12px,
+   selected row on a 12% accent tint.
+   ============================================================ */
+
+.fm {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  height: 100%;
+  min-height: 0;
+}
+
+.fm-panes {
+  display: grid;
+  grid-template-columns: 1fr 46px 1fr;
+  min-height: 0;
+}
+
+.fm-pane {
+  display: grid;
+  grid-template-rows: 38px 40px 26px 1fr 28px;
+  min-height: 0;
+  min-width: 0;
+  border-right: 1px solid var(--border);
+}
+.fm-pane:last-child { border-right: 0; }
+
+.fm-pane__head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-0);
+}
+.fm-pane__head svg { color: var(--fg-1); flex: none; }
+
+.fm-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--fg-3);
+}
+.fm-dot.is-live {
+  background: var(--status-connected);
+  box-shadow: 0 0 0 3px var(--status-connected-bg);
+}
+
+.fm-hostpick {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--fg-0);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+/* ─── Path bar ─────────────────────────────────────────────── */
+
+.fm-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.fm-nav {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: var(--r-sm);
+  color: var(--fg-1);
+  cursor: pointer;
+}
+.fm-nav:hover:not(:disabled) { background: var(--bg-2); color: var(--fg-0); }
+.fm-nav:disabled { opacity: 0.35; cursor: default; }
+
+/* Paths are machine values — monospace, and editable, because typing a path
+   is faster than clicking through eight folders. */
+.fm-path {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  outline: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-0);
+}
+.fm-path:focus {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 22%, transparent);
+}
+.fm-path:disabled { opacity: 0.5; }
+
+/* ─── Rows ─────────────────────────────────────────────────── */
+
+.fm-cols,
+.fm-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px 104px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+}
+.fm-pane:last-child .fm-cols,
+.fm-pane:last-child .fm-row {
+  grid-template-columns: minmax(0, 1fr) 82px 104px 96px;
+}
+
+.fm-cols {
+  height: 26px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+}
+.fm-cols .c-size,
+.fm-cols .c-mod,
+.fm-cols .c-perms { text-align: right; }
+
+.fm-list {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.fm-row {
+  height: 28px;
+  cursor: default;
+  user-select: none;
+}
+.fm-row:hover { background: var(--bg-1); }
+.fm-row.is-selected {
+  background: color-mix(in oklab, var(--accent-500) 12%, transparent);
+  box-shadow: inset 2px 0 0 0 var(--accent-500);
+}
+
+/* The keyboard cursor. Distinct from selection on purpose: the cursor can sit
+   on a directory, which is not a transfer target, so the two must not look the
+   same or Upload would appear armed when it is not. */
+.fm-row.is-cursor {
+  outline: 1px solid color-mix(in oklab, var(--accent-500) 55%, transparent);
+  outline-offset: -1px;
+}
+.fm-list:focus-visible .fm-row.is-cursor {
+  outline-color: var(--accent-500);
+  background: color-mix(in oklab, var(--accent-500) 8%, transparent);
+}
+
+/* The list takes focus so it can receive keys; a ring on the whole pane would
+   be noise, and the cursor row already shows where you are. */
+.fm-list:focus { outline: none; }
+
+.fm-row .c-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--fg-0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-row .c-name svg { flex: none; color: var(--accent-400); }
+
+.fm-row .c-size,
+.fm-row .c-mod,
+.fm-row .c-perms {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+  white-space: nowrap;
+}
+.fm-row .c-perms { color: var(--fg-2); }
+
+.fm-pane__foot {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-1);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-1);
+}
+
+.fm-empty {
+  padding: 40px 16px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--fg-2);
+}
+
+/* Explains why a host isn't browsable. Not an error state — reusing the
+   session is the deliberate behaviour, so this reads as information. */
+.fm-notice {
+  display: flex;
+  gap: 12px;
+  margin: 16px;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+}
+.fm-notice svg { color: var(--accent-400); flex: none; margin-top: 2px; }
+.fm-notice strong { display: block; font-size: 13px; color: var(--fg-0); }
+.fm-notice p {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-1);
+}
+
+/* ─── Transfer arrows ──────────────────────────────────────── */
+
+.fm-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.fm-move {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-2);
+  border-radius: var(--r-md);
+  color: var(--fg-1);
+  cursor: pointer;
+  transition: background 120ms var(--ease), color 120ms var(--ease),
+              transform 90ms var(--ease);
+}
+.fm-move:hover:not(:disabled) {
+  background: var(--accent-500);
+  border-color: var(--accent-500);
+  color: var(--accent-fg);
+}
+.fm-move:active:not(:disabled) { transform: translateY(1px); }
+.fm-move:disabled { opacity: 0.3; cursor: default; }
+
+/* ─── Transfer queue ───────────────────────────────────────── */
+
+.fm-transfers {
+  border-top: 1px solid var(--border);
+  background: var(--bg-1);
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.fm-transfers__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.fm-transfers__title { font-size: 12.5px; font-weight: 600; color: var(--fg-0); }
+.fm-transfers__active {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--status-connected);
+}
+.fm-transfers__active .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--status-connected);
+}
+.fm-transfers__clear {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  color: var(--fg-1);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.fm-transfers__clear:hover { color: var(--fg-0); }
+
+.fm-transfer {
+  display: grid;
+  grid-template-columns: 20px minmax(90px, 160px) minmax(0, 1fr) 200px 74px 24px;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.fm-transfer:last-child { border-bottom: 0; }
+
+.fm-transfer__dir { color: var(--accent-400); display: grid; place-items: center; }
+.fm-transfer.is-done .fm-transfer__dir { color: var(--status-connected); }
+.fm-transfer.is-error .fm-transfer__dir { color: var(--status-error); }
+
+.fm-transfer__name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-transfer__target {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-transfer__track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.fm-transfer__fill {
+  display: block;
+  height: 100%;
+  background: var(--accent-500);
+  transition: width 200ms var(--ease);
+}
+.fm-transfer.is-done .fm-transfer__fill { background: var(--status-connected); }
+.fm-transfer.is-error .fm-transfer__fill,
+.fm-transfer.is-cancelled .fm-transfer__fill { background: var(--status-error); }
+
+.fm-transfer__state {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+}
+.fm-transfer.is-error .fm-transfer__state { color: var(--status-error); }
+
+.fm-transfer__cancel {
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border: 0; background: transparent;
+  border-radius: var(--r-xs);
+  color: var(--fg-1); cursor: pointer;
+}
+.fm-transfer__cancel:hover { background: var(--bg-3); color: var(--status-error); }

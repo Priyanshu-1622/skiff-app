@@ -1,0 +1,73 @@
+import type { FastifyPluginAsync } from "fastify";
+import { z } from "zod";
+import { ok } from "../lib/response.js";
+import { generateId, parseSSHConfig } from "@skiff/core";
+import type { SessionStore } from "@skiff/core";
+import { requireUnlocked } from "../lib/auth-middleware.js";
+
+const ImportBody = z.object({
+  configText: z.string().min(1),
+  selectedHosts: z.array(z.string()).optional(),
+  folderId: z.string().nullable().default(null),
+});
+
+export interface ImportRouteDeps {
+  sessionStore: SessionStore;
+}
+
+export const importRoutes: (deps: ImportRouteDeps) => FastifyPluginAsync =
+  (deps) => async (app) => {
+    const auth = requireUnlocked(deps.sessionStore);
+
+    app.post("/api/import/parse", { preHandler: auth }, async (req) => {
+      const { configText } = z.object({ configText: z.string() }).parse(req.body);
+      const hosts = parseSSHConfig(configText);
+      return ok({ hosts });
+    });
+
+    app.post("/api/import/apply", { preHandler: auth }, async (req) => {
+      const body = ImportBody.parse(req.body);
+      const parsed = parseSSHConfig(body.configText);
+      const selected = body.selectedHosts
+        ? parsed.filter((h) => body.selectedHosts!.includes(h.alias))
+        : parsed;
+
+      const created: string[] = [];
+      const db = app.skiffDb.raw;
+
+      const insertHost = db.prepare(
+        `INSERT INTO hosts (id, folder_id, label, hostname, port, username, auth_method, credential_id, tags, starred, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, '[]', 0, ?)`
+      );
+
+      const tx = db.transaction(() => {
+        for (const h of selected) {
+          const hostId = generateId("hst");
+
+          // key-based imports. The IdentityFile path is a local path on the
+          // user's machine — it is not the key content. Storing a comment string
+          // as the credential causes ssh2 to fail with a confusing "invalid key"
+          // error at connect time. Instead, leave credential_id null so the
+          // user is prompted to paste the actual key content when they connect.
+          insertHost.run(
+            hostId, body.folderId, h.alias, h.hostname || h.alias,
+            h.port || 22, h.user || "root",
+            h.identityFile ? "key" : "password",
+            null, // credential_id intentionally null for key-based imports
+            new Date().toISOString(),
+          );
+          created.push(hostId);
+        }
+      });
+
+      tx();
+      return ok({
+        imported: created.length,
+        hostIds: created,
+        // Surface which hosts need credentials so the UI can warn the user
+        needsCredential: selected
+          .filter((h) => h.identityFile)
+          .map((h) => h.alias),
+      });
+    });
+  };

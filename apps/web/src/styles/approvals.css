@@ -1,0 +1,215 @@
+/* ============================================================
+   APPROVALS
+   Pending requests are cards (they need a decision); decided
+   ones are compact rows (they're a record).
+   ============================================================ */
+
+.ap-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 20px 0;
+  padding: 13px 16px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-1);
+}
+.ap-banner svg { flex: none; color: var(--fg-1); }
+.ap-banner b { color: var(--fg-0); font-weight: 600; }
+.ap-banner code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  margin: 0 2px;
+  border-radius: 3px;
+  background: var(--status-connecting-bg);
+  border: 1px solid color-mix(in oklab, var(--status-connecting) 40%, transparent);
+  color: var(--status-connecting);
+}
+.ap-banner.is-on {
+  background: var(--status-connected-bg);
+  border-color: color-mix(in oklab, var(--status-connected) 32%, transparent);
+}
+.ap-banner.is-on svg { color: var(--status-connected); }
+.ap-banner.is-muted { opacity: 0.85; }
+
+.ap-section { padding: 22px 20px 0; }
+
+.ap-section__title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-0);
+  margin: 0 0 12px;
+}
+
+.ap-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--status-connecting-bg);
+  border: 1px solid color-mix(in oklab, var(--status-connecting) 40%, transparent);
+  color: var(--status-connecting);
+}
+
+.ap-empty {
+  padding: 22px 0;
+  font-size: 13px;
+  color: var(--fg-2);
+}
+
+/* ─── Pending card ─────────────────────────────────────────── */
+
+.ap-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  border-radius: var(--r-md);
+  border: 1px solid color-mix(in oklab, var(--status-connecting) 35%, transparent);
+  background: var(--status-connecting-bg);
+}
+
+.ap-card__main { flex: 1; min-width: 0; }
+
+.ap-card__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--fg-0);
+}
+.ap-who { font-weight: 600; }
+.ap-verb { color: var(--fg-1); }
+.ap-host { font-family: var(--font-mono); font-size: 13px; color: var(--fg-0); }
+
+.ap-reason {
+  margin: 7px 0 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--fg-1);
+}
+
+.ap-meta {
+  display: flex;
+  gap: 7px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+}
+.ap-meta .dot { color: var(--fg-3); }
+
+.ap-card__actions { display: flex; gap: 9px; flex: none; }
+
+/* ─── Decided rows ─────────────────────────────────────────── */
+
+.ap-table { border-top: 1px solid var(--border); }
+
+.ap-row {
+  display: grid;
+  grid-template-columns: 90px minmax(160px, 1fr) 140px 160px 110px;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  padding: 0 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--fg-1);
+}
+
+.ap-badge {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-2);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+}
+.ap-badge.is-approved {
+  background: var(--status-connected-bg);
+  border-color: color-mix(in oklab, var(--status-connected) 40%, transparent);
+  color: var(--status-connected);
+}
+.ap-badge.is-denied {
+  background: var(--status-error-bg);
+  border-color: color-mix(in oklab, var(--status-error) 45%, transparent);
+  color: var(--status-error);
+}
+
+.ap-row__host { font-family: var(--font-mono); font-size: 12px; color: var(--fg-0); }
+.ap-row__when { font-family: var(--font-mono); font-size: 11px; text-align: right; }
+
+/* ─── Blocked-connection dialog ────────────────────────────── */
+
+/* Matches .dialog__head / .dialog__foot padding so content lines up. */
+.ap-gate__body { padding: 4px 20px 8px; }
+
+.ap-gate__lede {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg-1);
+  margin: 0 0 14px;
+}
+.ap-gate__lede code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--fg-0);
+}
+
+.ap-gate__label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+  margin-bottom: 7px;
+}
+
+.ap-gate__input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--fg-0);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: 0;
+}
+.ap-gate__input:focus {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 22%, transparent);
+}
+
+.ap-gate__waiting {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: var(--r-md);
+  background: var(--status-connecting-bg);
+  border: 1px solid color-mix(in oklab, var(--status-connecting) 35%, transparent);
+  font-size: 13px;
+  color: var(--fg-1);
+}
+.ap-gate__waiting svg { color: var(--status-connecting); flex: none; }

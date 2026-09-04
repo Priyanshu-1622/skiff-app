@@ -1,0 +1,309 @@
+/* ============================================================
+   SKIFF — UNLOCK / CREATE VAULT
+   Built to the Instrument Panel mockup. Measured: title 18px/600,
+   vault name mono 11.5px, control column 324px, primary button 45px,
+   secondary 39px, footer strip mono 11px with a live green dot.
+
+   Deliberately not a card. The design puts the controls directly on
+   surface-base with nothing framing them — the screen is quiet, and
+   the only lit thing is the vault-state dot at the bottom.
+   ============================================================ */
+
+.unlock-stage {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background: var(--bg-0);
+}
+
+.unlock-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  min-height: 0;
+}
+
+/* ─── Identity ─────────────────────────────────────────────── */
+
+.unlock-mark {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-lg, 8px);
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  color: var(--accent-400);
+  margin-bottom: 18px;
+}
+
+.unlock-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg-0);
+  margin: 0;
+}
+
+/* The vault's name is a machine value — monospace, per the type rule. */
+.unlock-vault {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--fg-1);
+  margin-top: 6px;
+}
+
+.unlock-sub {
+  font-size: 13px;
+  color: var(--fg-1);
+  margin-top: 10px;
+  max-width: 340px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ─── Controls ─────────────────────────────────────────────── */
+
+.unlock-form {
+  width: 324px;
+  max-width: 100%;
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.unlock-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 14px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--fg-1);
+  transition: border-color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease);
+}
+
+.unlock-input:focus-within {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 22%, transparent);
+}
+
+.unlock-input input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--fg-0);
+}
+.unlock-input input::placeholder { color: var(--fg-1); }
+
+.unlock-input .lead { display: inline-flex; flex: none; color: var(--fg-1); }
+
+/* "show" rather than an eye glyph — the design spells it out. */
+.unlock-input .reveal {
+  flex: none;
+  background: transparent;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-1);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--r-xs);
+}
+.unlock-input .reveal:hover { color: var(--fg-0); background: var(--bg-2); }
+
+.unlock-input.error {
+  border-color: var(--status-error);
+  box-shadow: 0 0 0 3px var(--status-error-bg);
+}
+
+@keyframes unlock-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-5px); }
+  40%      { transform: translateX(5px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+.unlock-input.shake { animation: unlock-shake 0.32s var(--ease); }
+
+.unlock-btn {
+  height: 45px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--accent-500);
+  background: var(--accent-500);
+  color: var(--accent-fg);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+
+/* Fixed-size slot so the icon never nudges the text off pixel-perfect
+   center — SVGs vary slightly in visual weight per glyph otherwise. */
+.unlock-btn > svg {
+  flex: none;
+  display: block;
+}
+.unlock-btn:hover:not(:disabled) { background: var(--accent-600); border-color: var(--accent-600); }
+
+/* Disabled reads as an empty outline, matching the mockup's resting state. */
+.unlock-btn:disabled {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--fg-1);
+  cursor: default;
+}
+
+.unlock-btn .kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* ─── Error line ───────────────────────────────────────────── */
+
+.unlock-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--status-error);
+}
+.unlock-error .dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--status-error);
+}
+
+.unlock-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+  text-align: center;
+}
+
+/* ─── Footer strip ─────────────────────────────────────────── */
+
+.unlock-foot {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+}
+
+.unlock-foot .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--status-connected);
+  box-shadow: 0 0 0 3px var(--status-connected-bg);
+  flex: none;
+}
+
+/* Spinner used while the vault status is still loading. */
+.unlock-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--accent-500);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ─── Device unlock ────────────────────────────────────────── */
+
+.unlock-btn--device {
+  margin-bottom: 4px;
+}
+
+/* Divider between the device button and the password field. Only rendered
+   when there are genuinely two ways in — a lone "or" above a single field
+   would be nonsense. */
+.unlock-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0;
+  color: var(--fg-2);
+}
+.unlock-or::before,
+.unlock-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.unlock-or span {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Same treatment as the shared buttons. */
+.unlock-btn {
+  box-shadow:
+    inset 0 1px 0 var(--hi-inset-strong),
+    var(--drop-sm);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--accent-500) 92%, white) 0%,
+    var(--accent-500) 100%
+  );
+  border-color: color-mix(in oklab, var(--accent-500) 82%, black);
+  transition:
+    background 120ms var(--ease),
+    border-color 120ms var(--ease),
+    box-shadow 120ms var(--ease),
+    transform 90ms var(--ease);
+}
+.unlock-btn:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--accent-400) 96%, white) 0%,
+    var(--accent-500) 100%
+  );
+  border-color: color-mix(in oklab, var(--accent-400) 82%, black);
+}
+.unlock-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  background: var(--accent-600);
+  box-shadow: var(--press-inset);
+}
+.unlock-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 34%, transparent);
+}
+/* Disabled stays a flat outline — no gradient, nothing to press. */
+.unlock-btn:disabled {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--fg-1);
+  box-shadow: none;
+  transform: none;
+}

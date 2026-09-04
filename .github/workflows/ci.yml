@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Typecheck, test & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      # Native modules (better-sqlite3, argon2, ssh2) compile here because
+      # pnpm-workspace.yaml allows their build scripts.
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      # The API and web packages import from the compiled output of the
+      # workspace packages, so those must be built before typecheck/tests
+      # run on a clean clone. @skiff/core is the engine (SSH, vault,
+      # recording, audit, db); @skiff/shared is the type package.
+      - name: Build workspace packages
+        run: |
+          pnpm --filter @skiff/core build
+          pnpm --filter @skiff/shared build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Core engine tests
+        run: pnpm --filter @skiff/core test
+
+      # The desktop IPC handlers are deliberately Electron-free (they import
+      # contract.ts, not registry.ts), so they run headlessly here with no
+      # display server. better-sqlite3 cannot compile in every CI image, so
+      # the runner substitutes Node 22's built-in node:sqlite; set
+      # SKIFF_TEST_REAL_SQLITE=1 to force the native driver locally.
+      - name: Desktop IPC tests
+        run: pnpm --filter @skiff/desktop test
+
+      - name: API integration tests
+        run: pnpm --filter @skiff/api test
+
+      - name: Build
+        run: pnpm build

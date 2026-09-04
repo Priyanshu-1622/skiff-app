@@ -1,0 +1,35 @@
+Skiff — licensing
+=================
+
+Skiff is not under a single license. Which one applies depends on which part of
+the repository you are looking at.
+
+  packages/core/          Apache License 2.0
+  everything else         GNU Affero General Public License v3.0 only
+
+Why the split
+-------------
+
+`packages/core` is the engine: SSH session management, the encrypted vault,
+session recording, the tamper-evident audit log, and the database layer. It is
+a library, and it is deliberately permissive so it can be shared across every
+build of Skiff — including builds that are not themselves open source.
+
+Everything built on top of that engine — the desktop app, the web UI, the API
+server — stays under the AGPL. That is what stops someone taking Skiff, running
+it as a closed commercial service, and giving nothing back. The protection is
+on the product, not on the library.
+
+What this means for you
+-----------------------
+
+Using Skiff:        nothing changes. The application is AGPL, as it always was.
+Contributing:       your contribution is licensed under whichever license
+                    applies to the files you touch.
+Building on core:   Apache 2.0. No obligation to publish your source, and an
+                    explicit patent grant.
+
+Copyright
+---------
+
+Copyright (c) 2026 Priyanshu and the Skiff contributors.

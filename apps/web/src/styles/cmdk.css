@@ -1,0 +1,183 @@
+/* ============================================================
+   SKIFF — COMMAND PALETTE (Ctrl/Cmd-K)
+   1:1 from the Instrument Panel design. Floating overlay,
+   grouped fuzzy results, keyboard-first. Mono for machine values.
+   ============================================================ */
+
+.cmdk-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(4, 6, 10, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+  animation: cmdk-fade 0.12s ease;
+}
+@keyframes cmdk-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.cmdk {
+  width: 100%;
+  max-width: 620px;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: cmdk-rise 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes cmdk-rise {
+  from { transform: translateY(-8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Input ───────────────────────────────────────────────── */
+.cmdk__input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.cmdk__input-wrap .search-icon { color: var(--fg-2); flex: none; }
+.cmdk__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--fg-0);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+.cmdk__input::placeholder { color: var(--fg-2); }
+.cmdk__esc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  flex: none;
+}
+
+/* ── Results ─────────────────────────────────────────────── */
+.cmdk__results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+.cmdk__group-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+  padding: 8px 18px 4px;
+}
+.cmdk__row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 1px 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.08s;
+}
+.cmdk__row.sel {
+  background: color-mix(in oklab, var(--accent-500) 14%, transparent);
+  box-shadow: inset 2px 0 0 var(--accent-500);
+}
+.cmdk__row-icon {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-0);
+  color: var(--fg-2);
+}
+.cmdk__row.sel .cmdk__row-icon {
+  border-color: color-mix(in oklab, var(--accent-500) 40%, transparent);
+  background: color-mix(in oklab, var(--accent-500) 12%, transparent);
+  color: var(--accent-500);
+}
+.cmdk__row-main { flex: 1; min-width: 0; }
+.cmdk__row-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--fg-0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmdk__row-label.mono { font-family: var(--font-mono); font-size: 13px; font-weight: 400; }
+.cmdk__row-label .hl { color: var(--accent-400); font-weight: 700; }
+.cmdk__row-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.cmdk__row-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-2);
+  white-space: nowrap;
+  flex: none;
+  margin-left: 8px;
+}
+
+/* ── No results ──────────────────────────────────────────── */
+.cmdk__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 44px 20px;
+  text-align: center;
+}
+.cmdk__empty-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-0);
+}
+.cmdk__empty-sub { font-size: 12px; color: var(--fg-2); }
+
+/* ── Footer ──────────────────────────────────────────────── */
+.cmdk__footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-0);
+}
+.cmdk__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fg-2);
+}
+.cmdk__key kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-1);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  background: var(--bg-1);
+}

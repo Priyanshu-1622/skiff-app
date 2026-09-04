@@ -1,0 +1,515 @@
+/* ============================================================
+   SKIFF — FIRST RUN
+   Four steps: Welcome · Vault · Import · Ready.
+   Built to the Instrument Panel mockup; measured values —
+   h1 30px/700 (-0.02em), lede 15px, panel column 440px,
+   import list rows 53px, step rail 24px numerals.
+   ============================================================ */
+
+.fr {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 58px 1fr;
+  background: var(--bg-0);
+}
+
+/* ─── Step rail ────────────────────────────────────────────── */
+
+.fr-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+  overflow-x: auto;
+}
+
+.fr-steps__item {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.fr-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px;
+}
+
+.fr-step__num {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+}
+
+.fr-step__label {
+  font-size: 13px;
+  color: var(--fg-1);
+  white-space: nowrap;
+}
+
+.fr-step.is-current .fr-step__num {
+  background: var(--accent-500);
+  border-color: var(--accent-500);
+  color: var(--accent-fg);
+}
+.fr-step.is-current .fr-step__label {
+  color: var(--fg-0);
+  font-weight: 600;
+}
+
+.fr-step.is-done .fr-step__num {
+  border-color: var(--status-connected);
+  color: var(--status-connected);
+}
+
+.fr-steps__line {
+  width: 52px;
+  height: 1px;
+  flex: none;
+  margin: 0 12px;
+  background: var(--border-strong);
+}
+.fr-steps__line.is-done { background: var(--status-connected); }
+
+/* ─── Body ─────────────────────────────────────────────────── */
+
+.fr-body {
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+/* ─── Welcome / Ready ──────────────────────────────────────── */
+
+.fr-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 440px;
+  max-width: 100%;
+  padding-top: 40px;
+}
+.fr-welcome .fr-btn--primary { margin-top: 26px; }
+
+.fr-mark {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  color: var(--accent-400);
+  margin-bottom: 26px;
+}
+.fr-mark--ok {
+  color: var(--status-connected);
+  border-color: color-mix(in oklab, var(--status-connected) 40%, transparent);
+  background: var(--status-connected-bg);
+}
+
+.fr-h1 {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg-0);
+  margin: 0;
+}
+
+.fr-lede {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--fg-1);
+  margin: 12px 0 0;
+}
+
+/* The privacy promise is the one thing on this screen allowed a colour. */
+/* Sits between the lede and the button, so it reads as part of that stack
+   rather than a stray box: same width as the text above it, contents centred
+   like everything else on this screen. */
+.fr-assure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 24px;
+  padding: 11px 16px;
+  border-radius: var(--r-md);
+  background: var(--status-connected-bg);
+  border: 1px solid color-mix(in oklab, var(--status-connected) 30%, transparent);
+  color: var(--fg-0);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+.fr-assure svg { color: var(--status-connected); flex: none; }
+
+.fr-note {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+  margin-top: 14px;
+}
+.fr-note--left { text-align: left; align-self: flex-start; margin-top: 10px; }
+
+/* ─── Panels (Vault / Import) ──────────────────────────────── */
+
+.fr-panel {
+  width: 440px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.fr-panel--wide { width: 720px; }
+
+.fr-h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--fg-0);
+  margin: 0;
+}
+
+.fr-sub {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg-1);
+  margin: 8px 0 22px;
+}
+.fr-sub code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--fg-0);
+}
+
+.fr-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+  margin-bottom: 7px;
+}
+
+.fr-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 13px;
+  margin-bottom: 16px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  transition: border-color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease);
+}
+.fr-input:focus-within {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 22%, transparent);
+}
+.fr-input input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: var(--fg-0);
+}
+.fr-input .lead { display: inline-flex; flex: none; color: var(--fg-1); }
+.fr-input .reveal {
+  flex: none;
+  background: transparent;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-1);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--r-xs);
+}
+.fr-input .reveal:hover { color: var(--fg-0); background: var(--bg-2); }
+
+/* ─── Mode picker ──────────────────────────────────────────── */
+
+.fr-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.fr-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 13px;
+  text-align: left;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+}
+.fr-mode:hover { border-color: var(--border-strong); }
+.fr-mode.is-active {
+  border-color: var(--accent-500);
+  background: color-mix(in oklab, var(--accent-500) 10%, transparent);
+}
+.fr-mode__name { font-size: 13px; font-weight: 600; color: var(--fg-0); }
+.fr-mode__desc { font-size: 11.5px; color: var(--fg-1); }
+
+/* ─── Password strength ──────────────────────────────────── */
+
+.fr-meter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: -8px 0 18px;
+}
+.fr-meter__bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bg-3);
+}
+.fr-meter__bar.is-on { background: var(--accent-500); }
+
+/* ─── Warning callout ──────────────────────────────────────── */
+
+.fr-warn {
+  display: flex;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: var(--r-md);
+  background: var(--status-connecting-bg);
+  border: 1px solid color-mix(in oklab, var(--status-connecting) 35%, transparent);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-1);
+}
+.fr-warn .ic { color: var(--status-connecting); flex: none; margin-top: 1px; }
+.fr-warn strong { color: var(--fg-0); font-weight: 600; }
+
+.fr-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--status-error);
+}
+.fr-error .dot {
+  width: 6px; height: 6px; flex: none;
+  border-radius: 50%;
+  background: var(--status-error);
+}
+
+/* ─── Import list ──────────────────────────────────────────── */
+
+.fr-list {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-1);
+  overflow: hidden;
+}
+
+.fr-list__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.fr-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-0);
+  cursor: pointer;
+}
+
+.fr-list__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+}
+
+.fr-list__col {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+}
+
+.fr-list__body { max-height: 340px; overflow-y: auto; }
+
+.fr-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 53px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.fr-row:last-child { border-bottom: 0; }
+.fr-row:hover { background: var(--bg-2); }
+
+.fr-row__main { display: grid; gap: 2px; min-width: 0; flex: 1; }
+
+/* Hostnames and addresses are machine values — monospace, always. */
+.fr-row__alias {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fr-row__addr {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fr-row__identity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-400);
+}
+
+.fr-check input,
+.fr-row input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  accent-color: var(--accent-500);
+  cursor: pointer;
+}
+
+/* ─── Actions ──────────────────────────────────────────────── */
+
+.fr-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+.fr-actions .fr-btn--primary { margin-left: auto; }
+
+.fr-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-1);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.fr-btn:hover:not(:disabled) { background: var(--bg-2); color: var(--fg-0); }
+
+.fr-btn--primary {
+  padding: 0 26px;
+  border-color: var(--accent-500);
+  background: var(--accent-500);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+.fr-btn--primary:hover:not(:disabled) {
+  background: var(--accent-600);
+  border-color: var(--accent-600);
+  color: var(--accent-fg);
+}
+.fr-btn:disabled { opacity: 0.45; cursor: default; }
+
+/* Restore-from-backup, offered on the welcome step. Quiet on purpose —
+   most people are creating a new vault, not recovering one. */
+.fr-restore {
+  margin-top: 18px;
+  font-size: 12.5px;
+  color: var(--accent-400);
+  cursor: pointer;
+}
+.fr-restore:hover { text-decoration: underline; text-underline-offset: 2px; }
+.fr-restore input { display: none; }
+
+/* Match the shared button treatment — same machined feel, same press. */
+.fr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  box-shadow:
+    inset 0 1px 0 var(--hi-inset),
+    var(--drop-sm);
+  transition:
+    background 120ms var(--ease),
+    border-color 120ms var(--ease),
+    box-shadow 120ms var(--ease),
+    transform 90ms var(--ease),
+    color 120ms var(--ease);
+}
+.fr-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--press-inset);
+}
+.fr-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 34%, transparent);
+}
+.fr-btn--primary {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--accent-500) 92%, white) 0%,
+    var(--accent-500) 100%
+  );
+  border-color: color-mix(in oklab, var(--accent-500) 82%, black);
+  box-shadow:
+    inset 0 1px 0 var(--hi-inset-strong),
+    var(--drop-sm);
+}
+.fr-btn--primary:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--accent-400) 96%, white) 0%,
+    var(--accent-500) 100%
+  );
+}
+.fr-btn--primary:active:not(:disabled) {
+  background: var(--accent-600);
+  box-shadow: var(--press-inset);
+}

@@ -1,0 +1,272 @@
+/* ============================================================
+   SNIPPETS
+   Categories on the left, cards on the right. Commands are
+   monospace with {{variables}} picked out in accent — the
+   variable is the part you have to notice.
+   ============================================================ */
+
+.sn {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  min-height: 100%;
+}
+
+.sn-cats {
+  border-right: 1px solid var(--border);
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sn-cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 30px;
+  padding: 0 9px;
+  border: 0;
+  background: transparent;
+  border-radius: var(--r-sm);
+  color: var(--fg-1);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.sn-cat:hover { background: var(--bg-2); color: var(--fg-0); }
+.sn-cat.is-active {
+  background: color-mix(in oklab, var(--accent-500) 12%, transparent);
+  color: var(--fg-0);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 0 var(--accent-500);
+}
+.sn-cat .n { font-family: var(--font-mono); font-size: 11px; color: var(--fg-1); }
+
+.sn-list { padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+
+/* ─── Card ─────────────────────────────────────────────────── */
+
+.sn-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-1);
+  padding: 14px 16px;
+}
+.sn-card:hover { border-color: var(--border-strong); }
+
+.sn-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 11px;
+}
+.sn-card__name { font-size: 13.5px; font-weight: 600; color: var(--fg-0); }
+
+.sn-vars {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--accent-500) 14%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent-500) 36%, transparent);
+  color: var(--accent-400);
+}
+
+.sn-card__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sn-icon {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: var(--r-sm);
+  color: var(--fg-1);
+  cursor: pointer;
+}
+.sn-icon:hover { background: var(--bg-3); color: var(--fg-0); }
+.sn-icon--danger:hover { background: var(--status-error-bg); color: var(--status-error); }
+
+.sn-cmd {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-0);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+
+/* The blank is the part you must notice before running it. */
+.sn-var {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--accent-500) 18%, transparent);
+  color: var(--accent-400);
+}
+
+.sn-card__foot { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+
+.sn-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  color: var(--fg-1);
+}
+
+.sn-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 72px 24px;
+  text-align: center;
+  color: var(--fg-1);
+  font-size: 13.5px;
+}
+.sn-empty svg { color: var(--fg-3); }
+.sn-empty__hint { max-width: 420px; font-size: 12.5px; line-height: 1.6; color: var(--fg-2); }
+.sn-empty__hint code,
+.sn-hint code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--accent-400);
+  margin: 0 2px;
+}
+
+/* ─── Dialogs ──────────────────────────────────────────────── */
+
+.sn-dialog { width: 560px; max-width: 100%; }
+/* Matches .dialog__head / .dialog__foot padding so content lines up. */
+.sn-run { padding: 4px 20px 8px; }
+
+.sn-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+  margin: 14px 0 7px;
+}
+.sn-run > .sn-label:first-child { margin-top: 4px; }
+
+.sn-field {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.sn-field:focus-within {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 22%, transparent);
+}
+.sn-field input,
+.sn-field select {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-size: 13px;
+  color: var(--fg-0);
+}
+.sn-field input.mono,
+.sn-field select { font-family: var(--font-mono); font-size: 12.5px; }
+.sn-field select { cursor: pointer; }
+
+.sn-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--fg-0);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  resize: vertical;
+  outline: 0;
+}
+.sn-textarea:focus {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 22%, transparent);
+}
+
+.sn-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-1);
+}
+
+.sn-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Shows exactly what will be sent, after substitution. */
+.sn-preview {
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: var(--r-md);
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-0);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sn-guard {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 13px 14px;
+  border-radius: var(--r-md);
+  background: var(--status-connecting-bg);
+  border: 1px solid color-mix(in oklab, var(--status-connecting) 40%, transparent);
+}
+.sn-guard.is-critical {
+  background: var(--status-error-bg);
+  border-color: color-mix(in oklab, var(--status-error) 50%, transparent);
+}
+.sn-guard svg { flex: none; color: var(--status-connecting); margin-top: 2px; }
+.sn-guard.is-critical svg { color: var(--status-error); }
+.sn-guard strong { display: block; font-size: 13px; color: var(--fg-0); }
+.sn-guard p { margin: 5px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--fg-1); }
+
+/* Delete confirmation.
+
+   This was `window.confirm()` — a native OS dialog, unstyled, blocking, and
+   showing nothing but a name. It reused none of the app's dialog chrome, so it
+   read as a browser artefact in the middle of a designed product. */
+.sn-confirm__text {
+  margin: 0 0 4px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fg-1);
+}

@@ -1,0 +1,643 @@
+/* ============================================================
+   SKIFF — SHELL
+   Title bar (macOS) · Sidebar · Main column toolbar · Status rail
+
+   Built to the Instrument Panel design. Values here were measured
+   off the rendered mockups, not estimated: 240px sidebar, 30px nav
+   rows with 7px/9px padding and a 2px inset accent bar when active,
+   9px/0.14em monospace group headers, 38px rail.
+
+   Structural note: the design has NO bar spanning the window. The
+   brand lives in the sidebar; search and per-screen actions live in
+   a toolbar inside the main column. Anything that reintroduces a
+   full-width topbar is a regression against the design.
+   ============================================================ */
+
+/* ─── App grid ─────────────────────────────────────────────── */
+
+.app {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 1fr 38px;
+  grid-template-areas:
+    "sidebar main"
+    "rail    rail";
+  background: var(--bg-0);
+  color: var(--fg-0);
+  font-size: var(--t-base);
+  overflow: hidden;
+}
+
+/* macOS only: the frame is hidden, so we supply the strip the traffic
+   lights sit on. Windows/Linux keep the OS frame and never get this row. */
+.app.has-titlebar {
+  grid-template-rows: 38px 1fr 38px;
+  grid-template-areas:
+    "titlebar titlebar"
+    "sidebar  main"
+    "rail     rail";
+}
+
+.app.is-collapsed {
+  grid-template-columns: 56px 1fr;
+}
+
+/* Routes without the shell (unlock, setup, team login). */
+.app--bare {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr;
+  background: var(--bg-0);
+}
+.app--bare.has-titlebar {
+  grid-template-rows: 38px 1fr;
+}
+.app--bare__body {
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ─── Title bar (macOS) ────────────────────────────────────── */
+
+.titlebar {
+  grid-area: titlebar;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  /* Traffic lights float over the left; keep the title clear of them. */
+  padding: 0 14px 0 82px;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.titlebar__title {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--fg-1);
+}
+
+/* ─── Sidebar ──────────────────────────────────────────────── */
+
+.sidebar {
+  grid-area: sidebar;
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 8px 8px;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 9px;
+  flex: none;
+}
+
+.sidebar__mark {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  color: var(--accent-400);
+}
+
+.sidebar__name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fg-0);
+  white-space: nowrap;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: none;
+}
+
+/* ─── Nav items ────────────────────────────────────────────── */
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+  padding: 7px 9px;
+  border: 0;
+  background: transparent;
+  border-radius: var(--r-sm);
+  color: var(--fg-1);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+
+.nav-item__icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--fg-1);
+}
+
+.nav-item__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--fg-1);
+  flex: none;
+}
+
+/* Pending approvals read amber — the one place the nav raises its voice. */
+.nav-item__badge {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--status-connecting);
+  flex: none;
+}
+
+.nav-item:hover:not(.is-soon) {
+  background: var(--bg-2);
+  color: var(--fg-0);
+}
+.nav-item:hover:not(.is-soon) .nav-item__icon {
+  color: var(--fg-0);
+}
+
+.nav-item.is-active {
+  background: color-mix(in oklab, var(--accent-500) 12%, transparent);
+  color: var(--fg-0);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 0 var(--accent-500);
+}
+.nav-item.is-active .nav-item__icon {
+  color: var(--accent-400);
+}
+
+/* Destinations whose screens aren't built yet: present but inert. Shown
+   rather than hidden so the nav matches the design, dimmed so nobody
+   expects them to work. */
+.nav-item.is-soon {
+  color: var(--fg-3);
+  cursor: default;
+}
+.nav-item.is-soon .nav-item__icon {
+  color: var(--fg-3);
+}
+.nav-item.is-soon .nav-item__count,
+.nav-item.is-soon .nav-item__badge {
+  color: var(--fg-3);
+}
+
+/* ─── Group header ─────────────────────────────────────────── */
+
+.sidebar__group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 9px 7px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--fg-1);
+  flex: none;
+}
+
+.sidebar__group .add {
+  background: transparent;
+  border: 0;
+  color: var(--fg-1);
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-xs);
+}
+.sidebar__group .add:hover {
+  color: var(--fg-0);
+  background: var(--bg-2);
+}
+
+/* ─── Folder tree ──────────────────────────────────────────── */
+
+.sidebar__tree {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding-right: 9px;
+  border-radius: var(--r-sm);
+  color: var(--fg-0);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+}
+
+.tree-item.is-child {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--fg-1);
+}
+
+.tree-item:hover {
+  background: var(--bg-2);
+}
+
+.tree-item.is-active {
+  background: var(--bg-3);
+  color: var(--fg-0);
+  box-shadow: inset 2px 0 0 0 var(--accent-500);
+}
+
+.tree-item__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-item__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--fg-1);
+  flex: none;
+}
+
+.tree-item__delete {
+  display: none;
+  background: transparent;
+  border: 0;
+  color: var(--fg-2);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--r-xs);
+}
+.tree-item:hover .tree-item__delete {
+  display: inline-flex;
+}
+.tree-item__delete:hover {
+  color: var(--status-error);
+  background: var(--status-error-bg);
+}
+
+.tree-item .twist {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--fg-2);
+  transition: transform var(--dur-fast) var(--ease);
+  border-radius: var(--r-xs);
+}
+.tree-item .twist.open {
+  transform: rotate(90deg);
+  color: var(--fg-1);
+}
+.tree-item .twist.empty {
+  visibility: hidden;
+}
+
+.sidebar__folders-empty {
+  padding: 4px 9px;
+  font-size: 12px;
+  color: var(--fg-2);
+}
+
+/* ─── Sidebar footer: user chip ────────────────────────────── */
+
+.sidebar__foot {
+  flex: none;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 5px;
+  border-radius: var(--r-md);
+}
+
+.user-chip__avatar {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--status-connected-bg);
+  border: 1px solid color-mix(in oklab, var(--status-connected) 40%, transparent);
+  color: var(--status-connected);
+}
+
+.user-chip__avatar.is-locked {
+  background: var(--status-idle-bg);
+  border-color: var(--border-strong);
+  color: var(--fg-1);
+}
+
+.user-chip__meta {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.user-chip__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-chip__state {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-1);
+}
+.user-chip__state.is-open {
+  color: var(--status-connected);
+}
+
+.user-chip__actions {
+  display: flex;
+  gap: 2px;
+  flex: none;
+}
+
+.chip-btn {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--fg-1);
+  cursor: pointer;
+}
+.chip-btn:hover {
+  background: var(--bg-2);
+  color: var(--fg-0);
+}
+
+.sidebar__collapse {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 2px;
+  padding: 6px 9px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--fg-1);
+  font-size: 11px;
+  cursor: pointer;
+}
+.sidebar__collapse:hover {
+  background: var(--bg-2);
+  color: var(--fg-0);
+}
+
+/* ─── Collapsed sidebar ────────────────────────────────────── */
+
+.sidebar.is-collapsed {
+  padding: 0 6px 8px;
+}
+.sidebar.is-collapsed .sidebar__name,
+.sidebar.is-collapsed .nav-item__label,
+.sidebar.is-collapsed .nav-item__count,
+.sidebar.is-collapsed .nav-item__badge,
+.sidebar.is-collapsed .sidebar__group,
+.sidebar.is-collapsed .sidebar__tree,
+.sidebar.is-collapsed .user-chip__meta,
+.sidebar.is-collapsed .sidebar__collapse span {
+  display: none;
+}
+.sidebar.is-collapsed .nav-item,
+.sidebar.is-collapsed .user-chip {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+.sidebar.is-collapsed .sidebar__brand {
+  justify-content: center;
+  padding: 0;
+}
+.sidebar.is-collapsed .sidebar__collapse {
+  justify-content: center;
+}
+.sidebar.is-collapsed .sidebar__collapse svg {
+  transform: rotate(180deg);
+}
+
+/* At 56px the avatar and both chip buttons cannot share a row — they end up
+   squeezed against each other and the panel reads as broken. Collapsed, the
+   chip becomes a single column: avatar, then the buttons beneath it. */
+.sidebar.is-collapsed .user-chip {
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+}
+.sidebar.is-collapsed .user-chip__actions {
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar.is-collapsed .sidebar__foot {
+  padding-top: 6px;
+  margin-top: 6px;
+}
+/* The folder group header is hidden, so its 18px top padding would leave a
+   gap where nothing is. */
+.sidebar.is-collapsed .sidebar__nav { margin-bottom: 6px; }
+
+/* ─── Main column ──────────────────────────────────────────── */
+
+.main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-0);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.main__body {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* ─── Toolbar (inside the main column, not spanning the window) ─── */
+
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: 57px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 420px;
+  max-width: 100%;
+  height: 33px;
+  padding: 0 12px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--fg-1);
+  cursor: text;
+  transition: border-color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease);
+}
+
+.toolbar__search:focus-within {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-500) 22%, transparent);
+}
+
+.toolbar__search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  /* Hostnames, IPs and tags are machine values — monospace, per the rule. */
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-0);
+}
+
+.toolbar__search input::placeholder {
+  color: var(--fg-1);
+}
+
+.toolbar__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+/* ─── Status rail — 38px, exact spec from the design ───────── */
+
+.statusrail {
+  grid-area: rail;
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  height: 38px;
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  user-select: none;
+}
+.statusrail .rail-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+}
+.statusrail .rail-item b {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg-0);
+}
+.statusrail .rail-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fg-3);
+  flex: none;
+}
+.statusrail .rail-item.live { color: var(--status-connected); }
+.statusrail .rail-item.live .rail-dot,
+.statusrail .rail-dot.live {
+  background: var(--status-connected);
+  box-shadow: 0 0 0 3px var(--status-connected-bg);
+}
+.statusrail .rail-item.off .rail-dot { background: var(--status-error); }
+.statusrail .rail-item.ok b { color: var(--status-connected); font-size: 12px; }
+.statusrail .rail-item.critical {
+  background: var(--status-error-bg);
+  color: var(--status-error);
+}
+.statusrail .rail-item.critical b { color: var(--status-error); }
+.statusrail .rail-item.pending {
+  background: var(--status-connecting-bg);
+  color: var(--status-connecting);
+}
+.statusrail .rail-item.pending b { color: var(--status-connecting); font-weight: 700; }
+.statusrail .rail-item.pending .rail-dot {
+  background: var(--status-connecting);
+  box-shadow: 0 0 0 3px var(--status-connecting-bg);
+}
+.statusrail .rail-item.latency {
+  margin-left: auto;
+  border-right: none;
+}
