@@ -513,3 +513,35 @@
   background: var(--accent-600);
   box-shadow: var(--press-inset);
 }
+
+/* Keychain offer on the final setup step. Sits between the confirmation and
+   the primary button: visible, but never in the way of finishing. */
+.fr-offer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  text-align: left;
+  width: 100%;
+  max-width: 460px;
+  margin: 4px 0 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-1);
+}
+.fr-offer__text { flex: 1 1 240px; min-width: 0; display: block; }
+.fr-offer__text strong { display: block; font-size: 13.5px; margin-bottom: 4px; color: var(--fg-0); }
+.fr-offer__text span { display: block; font-size: 12.5px; line-height: 1.55; color: var(--fg-2); }
+.fr-skip {
+  background: none;
+  border: 0;
+  padding: 8px 4px;
+  font-size: 12.5px;
+  color: var(--fg-2);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.fr-skip:hover { color: var(--fg-0); }
+.fr-skip:disabled { opacity: 0.5; cursor: default; }

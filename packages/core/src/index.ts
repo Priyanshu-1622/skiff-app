@@ -121,6 +121,7 @@ export {
 
 // ── SSH config parsing ───────────────────────────────────────────────────
 export { parseSSHConfig, type ParsedHost } from "./lib/ssh-config.js";
+export { describeSshError, formatSshError, type FriendlyError } from "./lib/ssh-errors.js";
 
 // ── Utilities ────────────────────────────────────────────────────────────
 export * from "./lib/id.js";

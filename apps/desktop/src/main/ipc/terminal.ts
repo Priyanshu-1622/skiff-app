@@ -28,6 +28,7 @@ import {
   checkCommand,
   TerminalLineBuffer,
   activeGrant,
+  formatSshError,
 } from "@skiff/core";
 import { ApiErrorCode } from "@skiff/shared";
 import type { EngineContext } from "../engine.js";
@@ -430,6 +431,12 @@ export function registerTerminalHandlers(
       let viaHost: { id: string; label: string | null; hostname: string } | null = null;
 
       const ssh = new SSH2Client();
+      // Which method this connection is actually attempting. On an auth
+      // rejection the useful hint differs entirely by method — a wrong
+      // password, a key missing from authorized_keys, and an agent holding
+      // the wrong keys are three different problems with the same ssh2
+      // message ("All configured authentication methods failed").
+      let authKind: "password" | "key" | "agent" | undefined;
       const connConfig: any = {
         host: host.hostname,
         port: host.port,
@@ -455,6 +462,7 @@ export function registerTerminalHandlers(
           );
         }
         connConfig.agent = sock;
+        authKind = "agent";
       }
 
       if (credential) {
@@ -468,6 +476,7 @@ export function registerTerminalHandlers(
           vaultKey,
         );
         if (credential.kind === "password") {
+          authKind = "password";
           connConfig.password = plaintext;
           // Also answer keyboard-interactive prompts with the same password.
           // Many servers — including modern macOS, whose sshd disables plain
@@ -490,6 +499,7 @@ export function registerTerminalHandlers(
           } catch {
             parsed = { value: plaintext };
           }
+          authKind = "key";
           connConfig.privateKey = parsed.value;
           if (parsed.passphrase) connConfig.passphrase = parsed.passphrase;
         }
@@ -718,7 +728,21 @@ export function registerTerminalHandlers(
 
       ssh.on("error", (sshErr) => {
         openGate();
-        emit({ sessionId, type: "error", message: sshErr.message });
+        // ssh2's own wording is accurate but not actionable — "Timed out while
+        // waiting for handshake" is the message that cost two days of
+        // debugging with the source open. The original text is preserved
+        // inside the translator for the log; what reaches the user says what
+        // to try next.
+        emit({
+          sessionId,
+          type: "error",
+          message: formatSshError(sshErr, {
+            hostname: host.hostname,
+            port: host.port,
+            username: host.username,
+            auth: authKind,
+          }),
+        });
       });
 
       // ── Jump host (ProxyJump) ────────────────────────────────────────
@@ -780,10 +804,16 @@ export function registerTerminalHandlers(
 
         jumpClient.on("error", (err) => {
           openGate();
+          // The bastion itself failed, not the target — say which machine to
+          // look at, or the user debugs the wrong one.
           emit({
             sessionId,
             type: "error",
-            message: `Jump host ${jump.label || jump.hostname} failed: ${err.message}`,
+            message: `Jump host ${jump.label || jump.hostname}: ` + formatSshError(err, {
+              hostname: jump.hostname,
+              port: jump.port,
+              username: jump.username,
+            }),
           });
         });
 

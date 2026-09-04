@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { BareShell } from "@/components/shell";
 import { useVault } from "@/lib/vault";
-import { apiPost } from "@/lib/api";
+import { apiPost, isDesktop } from "@/lib/api";
 import * as I from "@/components/icons";
 import type { VaultMode } from "@skiff/shared";
 import "@/styles/firstrun.css";
@@ -60,6 +60,10 @@ export function SetupRoute() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [imported, setImported] = useState(0);
   const [restoring, setRestoring] = useState(false);
+  // Keychain offer on the final step. `deviceUnlock` true means handled —
+  // either enrolled or explicitly skipped — and the offer stops showing.
+  const [deviceUnlock, setDeviceUnlock] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
 
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
   useEffect(() => {
@@ -417,6 +421,54 @@ export function SetupRoute() {
                   ? `${imported} ${imported === 1 ? "host is" : "hosts are"} in your vault, encrypted on this machine.`
                   : "Your vault is created and encrypted on this machine."}
               </p>
+
+              {/* Offered here rather than left in settings. This is the moment
+                  it converts: the vault is open, the password was typed
+                  seconds ago, and the alternative is typing it every launch
+                  until someone goes looking through settings for a feature
+                  they don't know exists. Skipping is one click and says so. */}
+              {isDesktop() && !deviceUnlock && (
+                <div className="fr-offer">
+                  <div className="fr-offer__text">
+                    <strong>Unlock with this device?</strong>
+                    <span>
+                      Use Touch ID, Windows Hello or your system keychain instead of
+                      typing the master password each time. The password still works,
+                      and this can be turned off later in Settings.
+                    </span>
+                  </div>
+                  <button
+                    className="fr-btn fr-btn--ghost"
+                    disabled={enrolling}
+                    onClick={async () => {
+                      setEnrolling(true);
+                      try {
+                        await apiPost("/api/keychain/enable", {});
+                        setDeviceUnlock(true);
+                      } catch (e: any) {
+                        // Not fatal: the vault works fine without it, and a
+                        // failed enrolment must not block finishing setup.
+                        setDeviceUnlock(true);
+                        setError(
+                          e?.message
+                            ? `Couldn't turn that on: ${e.message}. You can try again in Settings.`
+                            : "Couldn't turn that on. You can try again in Settings.",
+                        );
+                      } finally { setEnrolling(false); }
+                    }}
+                  >
+                    {enrolling ? "Setting up…" : "Turn on"}
+                  </button>
+                  <button
+                    className="fr-skip"
+                    onClick={() => setDeviceUnlock(true)}
+                    disabled={enrolling}
+                  >
+                    Not now
+                  </button>
+                </div>
+              )}
+
               <button className="fr-btn fr-btn--primary" onClick={() => navigate({ to: "/" })}>
                 Open Skiff
               </button>
