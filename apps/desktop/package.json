@@ -48,9 +48,7 @@
     },
     "files": [
       "dist/**/*",
-      "!**/*.map",
-      "!**/node_modules/**/{LICENSE,LICENSE.txt,LICENSE.md,license,license.txt,license.md}",
-      "!**/node_modules/**/{README,README.md,readme,readme.md,CHANGELOG.md}"
+      "!**/*.map"
     ],
     "publish": [
       {
