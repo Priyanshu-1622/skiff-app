@@ -27,6 +27,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      # apps/desktop's own postinstall (electron-builder install-app-deps —
+      # genuinely wanted for local dev) just ran as part of the install above
+      # and rebuilt better-sqlite3, argon2 and cpu-features for Electron's
+      # Node ABI. Everything below runs under plain Node 20, which needs the
+      # plain-Node ABI instead. This is the exact fault the test checklist
+      # documents for local dev ("rebuild for Node to test, rebuild for
+      # Electron to launch") — happening automatically here since nothing
+      # prompts a human to redo it between CI steps. One rebuild, once, before
+      # anything else in this job touches the native modules.
+      - name: Rebuild native modules for plain Node
+        run: pnpm rebuild better-sqlite3 argon2 cpu-features
+
       # The API and web packages import from the compiled output of the
       # workspace packages, so those must be built before typecheck/tests
       # run on a clean clone. @skiff/core is the engine (SSH, vault,
