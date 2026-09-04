@@ -22,6 +22,8 @@ jobs:
   build:
     name: Build ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       # Don't cancel the other platforms when one fails — a macOS signing
       # problem shouldn't throw away a good Windows build.
@@ -68,13 +70,15 @@ jobs:
 
       - name: Package
         working-directory: apps/desktop
-        run: pnpm ${{ matrix.command }} --publish never
+        # Only a real version tag (or an explicit manual request) publishes.
+        # electron-builder creates the release as a DRAFT when three separate
+        # OS runners each attach their own platform's assets — this is
+        # deliberate, so a user can't land on a release mid-run and find only
+        # one platform's build there. Publish the draft by hand on GitHub once
+        # all three matrix jobs have finished.
+        run: pnpm ${{ matrix.command }} --publish ${{ (startsWith(github.ref, 'refs/tags/v') || inputs.publish) && 'always' || 'never' }}
         env:
-          # Artifacts are distributed from skiffssh.me, not GitHub Releases, so
-          # nothing is published from here. --publish never keeps electron-builder
-          # from uploading anywhere; the files come back as workflow artifacts
-          # and get put on the site.
-          SKIFF_PUBLISH: "never"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # macOS signing. Absent on forks and first-time builds, in which
           # case electron-builder produces an unsigned app — usable for
           # testing, but Gatekeeper will warn end users.
@@ -117,115 +121,38 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  # ── Publish to Cloudflare R2 ────────────────────────────────────────────
-  #
-  # Artifacts are distributed from dl.skiffssh.me, not GitHub Releases, so the
-  # upload happens here rather than through electron-builder's own publisher
-  # (which stays on --publish never above).
-  #
-  # The `latest*.yml` files are what electron-updater actually reads; the
-  # binaries alone are not enough. An update feed missing its yml is the single
-  # failure mode you cannot patch remotely, so they are uploaded in the same
-  # step as the binaries and never separately.
-  #
-  # Required repository secrets:
-  #   R2_ACCOUNT_ID         Cloudflare account id
-  #   R2_ACCESS_KEY_ID      R2 API token, Object Read & Write
-  #   R2_SECRET_ACCESS_KEY  the matching secret
-  #   R2_BUCKET             bucket name behind dl.skiffssh.me
-  publish:
-    name: Publish to R2
+
+  # electron-builder's own publish step only uploads the artifact types it
+  # recognizes (installers, latest*.yml, .blockmap) — not the SHA256SUMS.txt
+  # each platform job generates separately, and each job only has its own
+  # platform's hashes anyway. This merges the three into the single file the
+  # download page promises, and attaches it after all platforms have landed.
+  checksums:
+    name: Merge and attach checksums
     needs: build
     runs-on: ubuntu-latest
-    # Tags publish. A manual run only publishes when explicitly asked, so a
-    # test build cannot overwrite the live update feed by accident.
     if: startsWith(github.ref, 'refs/tags/v') || inputs.publish
+    permissions:
+      contents: write
     steps:
-      - name: Download all platform artifacts
+      - name: Download each platform's checksum artifact
         uses: actions/download-artifact@v4
         with:
           path: dist
 
-      # Each platform job wrote its own SHA256SUMS.txt. Merge them into one
-      # file for the download page, sorted so the order is stable between
-      # releases and a diff means something.
-      - name: Merge checksums
+      - name: Merge into one file
         run: |
-          mkdir -p out
-          find dist -name 'SHA256SUMS.txt' -exec cat {} + | sort -k2 > out/SHA256SUMS.txt
-          find dist -type f \
-            \( -name '*.exe' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.deb' \
-               -o -name '*.blockmap' -o -name 'latest*.yml' \) \
-            -exec cp {} out/ \;
-          echo "--- publishing ---"
-          ls -la out
-          echo "--- checksums ---"
-          cat out/SHA256SUMS.txt
+          find dist -name 'SHA256SUMS.txt' -exec cat {} + | sort -k2 > SHA256SUMS.txt
+          echo "--- merged ---"
+          cat SHA256SUMS.txt
 
-      # Fail loudly rather than publishing a release nobody can update to.
-      - name: Verify the update feed is present
-        run: |
-          shopt -s nullglob
-          ymls=(out/latest*.yml)
-          if [ ${#ymls[@]} -eq 0 ]; then
-            echo "::error::No latest*.yml found. electron-updater cannot work without it; refusing to publish."
-            exit 1
-          fi
-          printf 'found: %s\n' "${ymls[@]}"
-
-      # The AWS CLI is pre-installed on ubuntu runners and speaks R2's
-      # S3-compatible API. Deliberately not a third-party upload action: this
-      # step holds credentials that can rewrite the update feed for every
-      # installed copy of Skiff, and that is not a reasonable thing to hand to
-      # an unpinned action in a security tool's release path.
-      - name: Upload to R2
+      # gh is preinstalled on GitHub-hosted runners; GITHUB_TOKEN already
+      # covers it, no separate secret. --clobber so re-running this workflow
+      # for the same tag (e.g. after fixing a platform build) replaces the
+      # file instead of failing on a duplicate.
+      - name: Attach to the release
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-          ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
-          BUCKET: ${{ secrets.R2_BUCKET }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-
-          # Binaries are immutable once published — a given version's installer
-          # never changes — so they cache hard.
-          aws s3 sync out "s3://$BUCKET/" \
-            --endpoint-url "$ENDPOINT" \
-            --exclude '*' \
-            --include '*.exe' --include '*.dmg' --include '*.AppImage' \
-            --include '*.deb' --include '*.blockmap' \
-            --cache-control 'public, max-age=31536000, immutable' \
-            --no-progress
-
-          # The feed and checksums must NOT cache hard: these are the files
-          # that change on every release, and a stale latest.yml at the edge
-          # means clients keep seeing the previous version as newest. Five
-          # minutes is short enough that a bad release can be pulled quickly.
-          aws s3 sync out "s3://$BUCKET/" \
-            --endpoint-url "$ENDPOINT" \
-            --exclude '*' \
-            --include 'latest*.yml' --include 'SHA256SUMS.txt' \
-            --content-type 'text/plain; charset=utf-8' \
-            --cache-control 'public, max-age=300, must-revalidate' \
-            --no-progress
-
-          echo "Published to $BUCKET"
-
-      # Reads the feed back through the public domain, not the API endpoint,
-      # so this also proves the custom domain and CDN are actually serving it.
-      - name: Verify the published feed is reachable
-        run: |
-          set -euo pipefail
-          for f in out/latest*.yml; do
-            name=$(basename "$f")
-            echo "checking https://dl.skiffssh.me/$name"
-            code=$(curl -s -o /tmp/pub.yml -w '%{http_code}' "https://dl.skiffssh.me/$name" || true)
-            if [ "$code" != "200" ]; then
-              echo "::error::dl.skiffssh.me/$name returned $code — the update feed is not live."
-              exit 1
-            fi
-            diff -q "$f" /tmp/pub.yml || {
-              echo "::warning::$name served does not match what was uploaded (CDN may still be catching up)."
-            }
-          done
+          gh release upload "${{ github.ref_name }}" SHA256SUMS.txt \
+            --clobber --repo "${{ github.repository }}"

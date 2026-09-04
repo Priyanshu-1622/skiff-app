@@ -52,9 +52,9 @@
     ],
     "publish": [
       {
-        "provider": "generic",
-        "url": "https://dl.skiffssh.me",
-        "channel": "latest"
+        "provider": "github",
+        "owner": "Priyanshu-1622",
+        "repo": "skiff-app"
       }
     ],
     "extraResources": [
@@ -77,7 +77,7 @@
           ]
         }
       ],
-      "artifactName": "Skiff-${version}-win-${arch}.${ext}",
+      "artifactName": "Skiff-win-${arch}.${ext}",
       "icon": "electron/icon.ico"
     },
     "nsis": {
@@ -104,7 +104,7 @@
       "category": "public.app-category.developer-tools",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
-      "artifactName": "Skiff-${version}-mac-${arch}.${ext}",
+      "artifactName": "Skiff-mac-${arch}.${ext}",
       "icon": "electron/icon.png",
       "entitlements": "electron/entitlements.mac.plist",
       "entitlementsInherit": "electron/entitlements.mac.plist",
@@ -117,7 +117,7 @@
       ],
       "category": "Development",
       "maintainer": "Skiff Contributors",
-      "artifactName": "Skiff-${version}-linux-${arch}.${ext}",
+      "artifactName": "Skiff-linux-${arch}.${ext}",
       "icon": "electron/icon.png",
       "synopsis": "Self-hosted SSH access control and audit",
       "description": "Skiff manages SSH connections and adds approval-gated access, a tamper-evident audit log, and session recording. Runs entirely on your machine.",
