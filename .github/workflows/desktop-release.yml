@@ -85,18 +85,22 @@ jobs:
           pnpm --filter @skiff/core build
           pnpm --filter @skiff/shared build
 
-      # @skiff/core and @skiff/shared are `injected` (see their dependenciesMeta
-      # in apps/desktop/package.json), so pnpm copies them into node_modules as
-      # real directories rather than symlinking them. electron-builder walks
-      # resolved real paths, and its getRelativePath() throws on any file that
-      # is neither under the app dir nor inside a /node_modules/ segment — which
-      # is exactly what a symlinked packages/core resolves to. Copying fixes it.
+      # electron-builder walks resolved real paths, and app-builder-lib's
+      # getRelativePath() throws on any file that is neither under the app dir
+      # nor inside a "/node_modules/" segment. pnpm symlinks @skiff/core, which
+      # resolves to packages/core — no node_modules segment — so packaging died
+      # on packages/core/LICENSE. This replaces those links with real
+      # directories containing dist + package.json + LICENSE.
       #
-      # The copy happens at install time and includes only what each package's
-      # own "files" field lists (dist). The first install above ran before dist
-      # existed, so the copies are empty until we install again here.
-      - name: Re-sync injected workspace packages
-        run: pnpm install --no-frozen-lockfile
+      # Must run after the workspace build (dist has to exist) and before
+      # electron-builder. Any `pnpm install` after this point recreates the
+      # symlinks and reintroduces the failure.
+      #
+      # Not done via node-linker=hoisted (hoisting applies to registry
+      # packages; workspace links stay symlinks) or dependenciesMeta.injected
+      # (needs pnpm's isolated linker, which node-linker=hoisted disables).
+      - name: Dereference workspace symlinks for packaging
+        run: node scripts/dereference-workspace-deps.mjs
 
       - name: Rebuild native modules for Electron
         working-directory: apps/desktop
