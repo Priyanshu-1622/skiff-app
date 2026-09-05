@@ -6,10 +6,20 @@ packages:
 # Without this, pnpm skips compilation and the API can't start
 # ("Could not locate the bindings file").
 # `allowBuilds` is the pnpm 11+ key; `onlyBuiltDependencies` covers pnpm 9/10.
+#
+# `electron` is on this list for a different reason than the native modules
+# above: it isn't compiling anything, but its own postinstall script is what
+# downloads the actual platform Electron binary. Without approval, pnpm
+# silently skips that script (no error, just a warning), leaving
+# node_modules/electron as a bare package.json with no binary behind it.
+# electron-builder then fails several steps later with "Cannot compute
+# electron version from installed node modules" — which looks like a
+# packaging bug but is actually just this download never having happened.
 allowBuilds:
   argon2: true
   better-sqlite3: true
   cpu-features: true
+  electron: true
   esbuild: true
   ssh2: true
 
@@ -17,5 +27,6 @@ onlyBuiltDependencies:
   - argon2
   - better-sqlite3
   - cpu-features
+  - electron
   - esbuild
   - ssh2
