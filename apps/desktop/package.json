@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "license": "AGPL-3.0-only",
   "description": "Skiff desktop application — native SSH connection manager and access governance.",
+  "homepage": "https://skiffssh.me",
+  "author": "Skiff Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Priyanshu-1622/skiff-app.git"
+  },
   "private": true,
   "type": "module",
   "main": "dist/main/index.js",

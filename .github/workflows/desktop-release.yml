@@ -106,6 +106,20 @@ jobs:
         working-directory: apps/desktop
         run: pnpm exec electron-builder install-app-deps
 
+      # Exported here rather than in the Package step's `env:` block, because
+      # a workflow expression resolving to an empty string still *defines* the
+      # variable — see the CSC note below. Skipped until a cert exists.
+      - name: Configure macOS code signing
+        if: runner.os == 'macOS' && secrets.MAC_CERT_P12 != ''
+        run: |
+          {
+            echo "CSC_LINK=${{ secrets.MAC_CERT_P12 }}"
+            echo "CSC_KEY_PASSWORD=${{ secrets.MAC_CERT_PASSWORD }}"
+            echo "APPLE_ID=${{ secrets.APPLE_ID }}"
+            echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_PASSWORD }}"
+            echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}"
+          } >> "$GITHUB_ENV"
+
       - name: Package
         working-directory: apps/desktop
         # Only a real version tag (or an explicit manual request) publishes.
@@ -117,18 +131,21 @@ jobs:
         run: pnpm ${{ matrix.command }} --publish ${{ (startsWith(github.ref, 'refs/tags/v') || inputs.publish) && 'always' || 'never' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS signing. Absent on forks and first-time builds, in which
-          # case electron-builder produces an unsigned app — usable for
-          # testing, but Gatekeeper will warn end users.
-          CSC_LINK: ${{ secrets.MAC_CERT_P12 }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # electron-builder notarizes only when all three Apple values are
-          # present. Without them the build still succeeds unsigned, which is
-          # what a fork or a first test build needs.
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.MAC_CERT_P12 != '' }}
+          # Signing variables are deliberately NOT listed here.
+          #
+          # `CSC_LINK: ${{ secrets.MAC_CERT_P12 }}` looks harmless when the
+          # secret does not exist, but it sets the variable to an EMPTY
+          # STRING, which is not the same as leaving it unset.
+          # electron-builder sees a defined CSC_LINK, treats it as a path to
+          # a certificate, and path.resolve("") returns the working directory
+          # — which is how this produced "apps/desktop not a file" on macOS.
+          #
+          # The signing values are exported by the conditional step above
+          # instead, which is skipped entirely until a certificate exists, so
+          # the variables stay genuinely unset. Without one macOS builds
+          # unsigned: fine for testing, and Gatekeeper refuses it for end
+          # users, which is why the download page marks macOS coming soon.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
 
       # Checksums are published on the download page. A security tool that
       # doesn't let people verify what they downloaded undercuts its own pitch,
