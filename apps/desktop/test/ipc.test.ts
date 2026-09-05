@@ -138,7 +138,7 @@ test("hosts: create, list, get, update, delete round-trip", async () => {
       hostname: "web-01.iad.internal",
       port: 22,
       username: "deploy",
-      credential: { kind: "password", secret: "s3cret" },
+      credential: { kind: "password", value: "s3cret" },
     });
     assert.ok(id);
 
@@ -182,7 +182,7 @@ test("hosts: credential secret is encrypted at rest", async () => {
       hostname: "db.internal",
       port: 22,
       username: "postgres",
-      credential: { kind: "password", secret: "PLAINTEXT_MARKER" },
+      credential: { kind: "password", value: "PLAINTEXT_MARKER" },
     });
 
     const row = engine.db.raw
@@ -619,7 +619,7 @@ test("settings: password change re-encrypts credentials and keeps them readable"
       hostname: "web.internal",
       port: 22,
       username: "deploy",
-      credential: { kind: "password", secret: "the-ssh-secret" },
+      credential: { kind: "password", value: "the-ssh-secret" },
     });
 
     await call(settings, "settings:changePassword", {
@@ -679,7 +679,7 @@ test("settings: backup exports encrypted credentials, never plaintext", async ()
       hostname: "web.internal",
       port: 22,
       username: "deploy",
-      credential: { kind: "password", secret: "PLAINTEXT_MARKER" },
+      credential: { kind: "password", value: "PLAINTEXT_MARKER" },
     });
 
     const backup = await call(settings, "settings:backup");
