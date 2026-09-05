@@ -1,4 +1,4 @@
-import { createRouter, createRoute, createRootRoute } from "@tanstack/react-router";
+import { createRouter, createRoute, createRootRoute, createHashHistory } from "@tanstack/react-router";
 import { RootLayout } from "@/routes/__root";
 import { UnlockRoute } from "@/routes/unlock";
 import { DashboardRoute } from "@/routes/dashboard";
@@ -33,5 +33,19 @@ const snippetsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/sni
 const previewRoute = createRoute({ getParentRoute: () => rootRoute, path: "/preview", component: PreviewRoute });
 
 const routeTree = rootRoute.addChildren([unlockRoute, dashboardRoute, terminalRoute, settingsRoute, teamLoginRoute, teamAdminRoute, setupRoute, recordingsRoute, auditRoute, approvalsRoute, filesRoute, tunnelsRoute, snippetsRoute, previewRoute]);
-export const router = createRouter({ routeTree });
+// The desktop app loads this bundle from disk, where location.pathname is the
+// path to index.html inside the asar — "/E:/.../dist/renderer/index.html" —
+// which matches no route, so every packaged launch landed on the not-found
+// page. Hash history keeps the route in the fragment instead, which is
+// unaffected by where the document was loaded from.
+//
+// Served over http (the self-hosted web app) nothing changes: real paths are
+// what the server and its deep links expect.
+const isFileProtocol =
+  typeof window !== "undefined" && window.location.protocol === "file:";
+
+export const router = createRouter({
+  routeTree,
+  ...(isFileProtocol ? { history: createHashHistory() } : {}),
+});
 declare module "@tanstack/react-router" { interface Register { router: typeof router; } }

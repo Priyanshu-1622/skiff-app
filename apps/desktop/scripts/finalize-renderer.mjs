@@ -73,7 +73,12 @@ for (const m of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/
   // The hash covers the element's exact text content, byte for byte — any
   // reformatting of index.html changes it, which is why this runs on the built
   // file rather than being written down somewhere.
-  const digest = createHash("sha256").update(m[1], "utf8").digest("base64");
+  // Hash the LF-normalized text, not the raw bytes. The HTML parser converts
+  // CRLF to LF in character data before the script ever reaches CSP, so a
+  // hash taken over CRLF source never matches what Chromium computes — the
+  // policy looked correct and the script was refused anyway.
+  const normalized = m[1].replace(/\r\n/g, "\n");
+  const digest = createHash("sha256").update(normalized, "utf8").digest("base64");
   hashes.push(`'sha256-${digest}'`);
 }
 
