@@ -18,7 +18,7 @@
     "package:win": "pnpm build && electron-builder --win",
     "package:mac": "pnpm build && electron-builder --mac",
     "package:linux": "pnpm build && electron-builder --linux",
-    "postinstall": "electron-builder install-app-deps",
+    "postinstall": "pnpm exec electron-builder install-app-deps",
     "test": "node test/run-tests.mjs"
   },
   "dependencies": {
