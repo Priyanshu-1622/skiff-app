@@ -44,8 +44,28 @@ jobs:
       # Electron to launch") — happening automatically here since nothing
       # prompts a human to redo it between CI steps. One rebuild, once, before
       # anything else in this job touches the native modules.
+      #
+      # `npm rebuild`, not `pnpm rebuild`: pnpm's rebuild command does not
+      # find packages under node-linker=hoisted (pnpm/pnpm#5560, still open),
+      # so it exits 0 having done nothing. The modules stayed on Electron's
+      # ABI and every test that opens a database failed with
+      # NODE_MODULE_VERSION 128 vs 115. The hoisted layout is a plain
+      # npm-style tree, so npm's own rebuild works on it.
       - name: Rebuild native modules for plain Node
-        run: pnpm rebuild better-sqlite3 argon2 cpu-features
+        run: npm rebuild better-sqlite3 argon2 cpu-features
+
+      # A rebuild that silently does nothing is what made the above so hard
+      # to spot: the step goes green and the failure surfaces much later as
+      # 30-odd unrelated-looking test errors. Load the module here, where a
+      # mismatch names itself immediately.
+      - name: Verify native modules load under plain Node
+        run: |
+          node -e "
+            require('better-sqlite3');
+            require('argon2');
+            console.log('native modules load under Node ' + process.versions.node +
+                        ' (ABI ' + process.versions.modules + ')');
+          "
 
       # The API and web packages import from the compiled output of the
       # workspace packages, so those must be built before typecheck/tests
@@ -55,14 +75,6 @@ jobs:
         run: |
           pnpm --filter @skiff/core build
           pnpm --filter @skiff/shared build
-
-      # apps/desktop declares @skiff/core and @skiff/shared as `injected`, so
-      # pnpm copies them into node_modules instead of symlinking. The copies
-      # only carry each package's "files" (dist), and the install above ran
-      # before dist existed — so re-install now that it does, or anything
-      # resolving through node_modules/@skiff/* finds an empty package.
-      - name: Re-sync injected workspace packages
-        run: pnpm install --no-frozen-lockfile
 
       - name: Typecheck
         run: pnpm typecheck
