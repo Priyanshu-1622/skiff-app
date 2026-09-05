@@ -1,141 +1,52 @@
 {
-  "name": "@skiff/desktop",
+  "name": "skiff",
   "version": "1.0.0",
-  "license": "AGPL-3.0-only",
-  "description": "Skiff desktop application — native SSH connection manager and access governance.",
+  "description": "Self-hosted SSH connection manager. Open-source alternative to Termius.",
   "private": true,
-  "type": "module",
-  "main": "dist/main/index.js",
-  "scripts": {
-    "dev": "concurrently -n vite,electron -c cyan,magenta \"pnpm dev:renderer\" \"pnpm dev:main\"",
-    "dev:renderer": "pnpm --filter @skiff/web dev",
-    "dev:main": "pnpm build:main && electron .",
-    "build:main": "tsc -p tsconfig.main.json && node scripts/build-preload.mjs",
-    "build:renderer": "pnpm --filter @skiff/web build",
-    "build": "pnpm build:main && pnpm build:renderer",
-    "typecheck": "tsc --noEmit -p tsconfig.main.json",
-    "package": "pnpm build && electron-builder",
-    "package:win": "pnpm build && electron-builder --win",
-    "package:mac": "pnpm build && electron-builder --mac",
-    "package:linux": "pnpm build && electron-builder --linux",
-    "postinstall": "pnpm exec electron-builder install-app-deps",
-    "test": "node test/run-tests.mjs"
+  "keywords": [
+    "ssh",
+    "terminal",
+    "connection-manager",
+    "self-hosted",
+    "xterm",
+    "websocket",
+    "encryption",
+    "vault"
+  ],
+  "author": "Skiff Contributors",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Priyanshu-1622/skiff.git"
   },
-  "dependencies": {
-    "@skiff/core": "workspace:*",
-    "@skiff/shared": "workspace:*",
-    "electron-updater": "^6.8.9",
-    "ssh2": "^1.16.0",
-    "zod": "^3.23.8"
+  "bugs": {
+    "url": "https://github.com/Priyanshu-1622/skiff/issues"
+  },
+  "homepage": "https://github.com/Priyanshu-1622/skiff#readme",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently -n web,api -c cyan,green \"pnpm --filter @skiff/web dev\" \"pnpm --filter @skiff/api dev\"",
+    "dev:web": "pnpm --filter @skiff/web dev",
+    "dev:api": "pnpm --filter @skiff/api dev",
+    "build": "pnpm --filter @skiff/core build && pnpm --filter @skiff/shared build && pnpm --filter @skiff/api build && pnpm --filter @skiff/web build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "clean": "pnpm -r exec rm -rf node_modules dist .turbo && rm -rf node_modules"
   },
   "devDependencies": {
-    "@types/node": "^22.5.0",
-    "@types/ssh2": "^1.15.1",
-    "concurrently": "^9.2.1",
-    "electron": "32.3.3",
-    "electron-builder": "^25.1.8",
-    "esbuild": "^0.24.0",
-    "typescript": "^5.5.0",
-    "tsx": "^4.19.0"
+    "concurrently": "^9.2.1"
   },
-  "build": {
-    "appId": "me.skiffssh.desktop",
-    "productName": "Skiff",
-    "electronVersion": "32.3.3",
-    "copyright": "Copyright © Skiff Contributors. AGPL-3.0.",
-    "directories": {
-      "output": "release",
-      "buildResources": "electron"
-    },
-    "files": [
-      "dist/**/*",
-      "!**/*.map",
-      "!node_modules/@skiff/core/**/*",
-      "node_modules/@skiff/core/dist/**/*",
-      "node_modules/@skiff/core/package.json",
-      "!node_modules/@skiff/shared/**/*",
-      "node_modules/@skiff/shared/dist/**/*",
-      "node_modules/@skiff/shared/package.json"
-    ],
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "Priyanshu-1622",
-        "repo": "skiff-app"
-      }
-    ],
-    "extraResources": [
-      {
-        "from": "resources",
-        "to": "resources"
-      }
-    ],
-    "asarUnpack": [
-      "**/node_modules/better-sqlite3/**",
-      "**/node_modules/argon2/**",
-      "**/node_modules/cpu-features/**"
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "artifactName": "Skiff-win-${arch}.${ext}",
-      "icon": "electron/icon.ico"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "perMachine": false,
-      "installerIcon": "electron/icon.ico",
-      "uninstallerIcon": "electron/icon.ico",
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Skiff",
-      "deleteAppDataOnUninstall": false
-    },
-    "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "category": "public.app-category.developer-tools",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "artifactName": "Skiff-mac-${arch}.${ext}",
-      "icon": "electron/icon.png",
-      "entitlements": "electron/entitlements.mac.plist",
-      "entitlementsInherit": "electron/entitlements.mac.plist",
-      "notarize": false
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Development",
-      "maintainer": "Skiff Contributors",
-      "artifactName": "Skiff-linux-${arch}.${ext}",
-      "icon": "electron/icon.png",
-      "synopsis": "Self-hosted SSH access control and audit",
-      "description": "Skiff manages SSH connections and adds approval-gated access, a tamper-evident audit log, and session recording. Runs entirely on your machine.",
-      "desktop": {
-        "Name": "Skiff",
-        "Comment": "Self-hosted SSH access control and audit",
-        "Categories": "Development;Utility;",
-        "Keywords": "ssh;terminal;sftp;audit;",
-        "StartupWMClass": "Skiff"
-      }
-    },
-    "icon": "electron/icon.png"
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "argon2",
+      "better-sqlite3",
+      "cpu-features",
+      "electron",
+      "esbuild",
+      "ssh2"
+    ]
   }
 }
