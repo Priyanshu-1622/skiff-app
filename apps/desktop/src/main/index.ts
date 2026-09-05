@@ -12,7 +12,7 @@
  * the listener removes the entire class of attack.
  */
 
-import { app, BrowserWindow, Menu, ipcMain, shell, session } from "electron";
+import { app, BrowserWindow, Menu, ipcMain, shell, session, dialog } from "electron";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createEngine, destroyEngine, type EngineContext } from "./engine.js";
@@ -177,7 +177,22 @@ function createWindow(): void {
     void mainWindow.loadURL(DEV_SERVER_URL);
     mainWindow.webContents.openDevTools({ mode: "detach" });
   } else {
-    void mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+    // A packaged build that cannot find its renderer used to show an empty
+    // window and nothing else: loadFile's rejection was swallowed by `void`,
+    // the window never painted, and because closing hides to tray the process
+    // stayed alive and held its own files open. Fail loudly instead — a
+    // missing renderer is a broken build, not a runtime condition to survive.
+    const indexHtml = join(__dirname, "../renderer/index.html");
+    mainWindow.loadFile(indexHtml).catch((err) => {
+      dialog.showErrorBox(
+        "Skiff could not start",
+        `The application files are incomplete — the interface could not be loaded from:\n\n${indexHtml}\n\n` +
+          `${String(err)}\n\nReinstalling usually fixes this. If it does not, please report it at ` +
+          `https://github.com/Priyanshu-1622/skiff-app/issues`,
+      );
+      markQuitting();
+      app.quit();
+    });
   }
 
   mainWindow.on("closed", () => {
