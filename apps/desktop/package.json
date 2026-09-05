@@ -48,7 +48,13 @@
     },
     "files": [
       "dist/**/*",
-      "!**/*.map"
+      "!**/*.map",
+      "!node_modules/@skiff/core/**/*",
+      "node_modules/@skiff/core/dist/**/*",
+      "node_modules/@skiff/core/package.json",
+      "!node_modules/@skiff/shared/**/*",
+      "node_modules/@skiff/shared/dist/**/*",
+      "node_modules/@skiff/shared/package.json"
     ],
     "publish": [
       {
