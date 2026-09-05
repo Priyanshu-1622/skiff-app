@@ -209,7 +209,24 @@ function applyContentSecurityPolicy(): void {
   // .cast without an HTTP server, and widening connect-src was one option;
   // handing the player the recording inline is the other, and it keeps this
   // policy as narrow as it was. See the player source in routes/recordings.
+  //
+  // Only http(s) responses get the policy from here. A packaged build loads
+  // its renderer over file://, and those responses carry no headers of their
+  // own: handing Chromium a synthesized header object for them fails the
+  // request with ERR_FAILED rather than applying a policy, so the window came
+  // up empty and the app looked broken on every packaged install. That path
+  // never ran in development, which is why it survived to a release build.
+  //
+  // The packaged renderer is not left unprotected — the same policy is baked
+  // into dist/renderer/index.html as a <meta http-equiv> by
+  // scripts/inject-csp.mjs at build time, which is the approach Electron's
+  // own security guidance gives for apps loaded from disk. Keep the two in
+  // step: if you change the policy here, change it there too.
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    if (!details.url.startsWith("http:") && !details.url.startsWith("https:")) {
+      callback({});
+      return;
+    }
     callback({
       responseHeaders: {
         ...details.responseHeaders,

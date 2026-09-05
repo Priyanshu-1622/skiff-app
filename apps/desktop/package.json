@@ -17,7 +17,7 @@
     "dev:renderer": "pnpm --filter @skiff/web dev",
     "dev:main": "pnpm build:main && electron .",
     "build:main": "tsc -p tsconfig.main.json && node scripts/build-preload.mjs",
-    "build:renderer": "pnpm --filter @skiff/web build --base=./ --outDir=../desktop/dist/renderer --emptyOutDir",
+    "build:renderer": "pnpm --filter @skiff/web build --base=./ --outDir=../desktop/dist/renderer --emptyOutDir && node scripts/finalize-renderer.mjs",
     "build": "pnpm build:main && pnpm build:renderer",
     "typecheck": "tsc --noEmit -p tsconfig.main.json",
     "package": "pnpm build && electron-builder",
