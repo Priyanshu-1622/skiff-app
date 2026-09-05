@@ -85,6 +85,19 @@ jobs:
           pnpm --filter @skiff/core build
           pnpm --filter @skiff/shared build
 
+      # @skiff/core and @skiff/shared are `injected` (see their dependenciesMeta
+      # in apps/desktop/package.json), so pnpm copies them into node_modules as
+      # real directories rather than symlinking them. electron-builder walks
+      # resolved real paths, and its getRelativePath() throws on any file that
+      # is neither under the app dir nor inside a /node_modules/ segment — which
+      # is exactly what a symlinked packages/core resolves to. Copying fixes it.
+      #
+      # The copy happens at install time and includes only what each package's
+      # own "files" field lists (dist). The first install above ran before dist
+      # existed, so the copies are empty until we install again here.
+      - name: Re-sync injected workspace packages
+        run: pnpm install --no-frozen-lockfile
+
       - name: Rebuild native modules for Electron
         working-directory: apps/desktop
         run: pnpm exec electron-builder install-app-deps

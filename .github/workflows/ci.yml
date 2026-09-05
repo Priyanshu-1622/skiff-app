@@ -56,6 +56,14 @@ jobs:
           pnpm --filter @skiff/core build
           pnpm --filter @skiff/shared build
 
+      # apps/desktop declares @skiff/core and @skiff/shared as `injected`, so
+      # pnpm copies them into node_modules instead of symlinking. The copies
+      # only carry each package's "files" (dist), and the install above ran
+      # before dist existed — so re-install now that it does, or anything
+      # resolving through node_modules/@skiff/* finds an empty package.
+      - name: Re-sync injected workspace packages
+        run: pnpm install --no-frozen-lockfile
+
       - name: Typecheck
         run: pnpm typecheck
 
