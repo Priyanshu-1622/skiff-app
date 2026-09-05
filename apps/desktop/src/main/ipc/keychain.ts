@@ -37,17 +37,15 @@
 import { safeStorage, systemPreferences } from "electron";
 import { timingSafeEqual } from "node:crypto";
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
-import { join } from "node:path";
 import { computeVerifier, writeAudit } from "@skiff/core";
 import { ApiErrorCode } from "@skiff/shared";
 import type { EngineContext } from "../engine.js";
 import { fail, type Handlers } from "./contract.js";
+import { deviceKeyPath, forgetDeviceKey } from "./device-key.js";
 import { requireVaultKey, setSession, currentUser } from "./auth.js";
 
-const FILE = "device-unlock.bin";
-
 function blobPath(engine: EngineContext): string {
-  return join(engine.config.dataDir, FILE);
+  return deviceKeyPath(engine.config.dataDir);
 }
 
 function isMac(): boolean {
@@ -216,11 +214,8 @@ export function registerKeychainHandlers(engine: EngineContext): Handlers {
  * the stored one pointing at a vault that no longer exists. Exported so
  * settings can invalidate it without importing the whole handler module.
  */
-export function forgetDeviceKey(dataDir: string): void {
-  try {
-    const p = join(dataDir, FILE);
-    if (existsSync(p)) unlinkSync(p);
-  } catch {
-    /* best effort */
-  }
-}
+// forgetDeviceKey lives in ./device-key.js so callers that only need to
+// delete the blob (settings.ts, on password change) do not pull Electron in
+// through this module. Re-exported so existing importers of keychain.js keep
+// working.
+export { forgetDeviceKey };

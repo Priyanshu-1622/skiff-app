@@ -26,7 +26,10 @@ import { ApiErrorCode } from "@skiff/shared";
 import type { EngineContext } from "../engine.js";
 import { fail, type Handlers } from "./contract.js";
 import { currentUser, getSessionId, requireVaultKey, setSession } from "./auth.js";
-import { forgetDeviceKey } from "./keychain.js";
+// From device-key.js, not keychain.js: keychain.js imports Electron at the
+// top level, and ESM would load that whole graph just to reach this one
+// filesystem helper — which breaks the IPC tests under plain Node.
+import { forgetDeviceKey } from "./device-key.js";
 
 const ChangePasswordBody = z.object({
   currentPassword: z.string().min(1),
