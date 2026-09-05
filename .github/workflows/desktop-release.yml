@@ -24,6 +24,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
+    env:
+      # Bound here because the `secrets` context is NOT valid inside a step's
+      # `if:` — GitHub rejects the whole workflow at parse time with
+      # "Unrecognized named-value: 'secrets'", and none of the jobs run. Only
+      # github, needs, vars, env, inputs and steps are allowed there, so the
+      # secret is mirrored into env and the condition tests that instead.
+      # Empty when the secret does not exist, which is what we check for.
+      MAC_CERT_P12: ${{ secrets.MAC_CERT_P12 }}
     strategy:
       # Don't cancel the other platforms when one fails — a macOS signing
       # problem shouldn't throw away a good Windows build.
@@ -110,7 +118,7 @@ jobs:
       # a workflow expression resolving to an empty string still *defines* the
       # variable — see the CSC note below. Skipped until a cert exists.
       - name: Configure macOS code signing
-        if: runner.os == 'macOS' && secrets.MAC_CERT_P12 != ''
+        if: runner.os == 'macOS' && env.MAC_CERT_P12 != ''
         run: |
           {
             echo "CSC_LINK=${{ secrets.MAC_CERT_P12 }}"
