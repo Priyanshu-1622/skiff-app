@@ -33,7 +33,14 @@ jobs:
           - os: ubuntu-latest
             name: Linux
             command: package:linux
-          - os: windows-latest
+          # Pinned, not windows-latest. GitHub moved windows-latest to
+          # Visual Studio 2026 (internal version 18.x) in mid-June 2026, and
+          # node-gyp does not recognize that version yet — a currently open
+          # upstream bug (nodejs/node-gyp#3282), not something fixable from
+          # here by upgrading anything. GitHub's own changelog gives this
+          # exact fix for anyone not ready for VS2026: pin to windows-2022,
+          # which still ships VS2022 (17.x) and is fully node-gyp-supported.
+          - os: windows-2022
             name: Windows
             command: package:win
           - os: macos-latest
