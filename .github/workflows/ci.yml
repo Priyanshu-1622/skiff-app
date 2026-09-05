@@ -84,11 +84,19 @@ jobs:
 
       # The desktop IPC handlers are deliberately Electron-free (they import
       # contract.ts, not registry.ts), so they run headlessly here with no
-      # display server. better-sqlite3 cannot compile in every CI image, so
-      # the runner substitutes Node 22's built-in node:sqlite; set
-      # SKIFF_TEST_REAL_SQLITE=1 to force the native driver locally.
+      # display server.
+      #
+      # The harness defaults to a shim backed by node:sqlite, which only
+      # exists in Node 22.5+ — this job runs Node 20, so the default fails
+      # with ERR_UNKNOWN_BUILTIN_MODULE before a single test executes. That
+      # default was there because better-sqlite3 could not be relied on in
+      # CI, which was itself a symptom of the rebuild step above silently
+      # doing nothing. With the rebuild fixed, use the real driver: it works
+      # here, and it is the one the app actually ships with.
       - name: Desktop IPC tests
         run: pnpm --filter @skiff/desktop test
+        env:
+          SKIFF_TEST_REAL_SQLITE: "1"
 
       - name: API integration tests
         run: pnpm --filter @skiff/api test
