@@ -1,5 +1,7 @@
 {
   "name": "@skiff/desktop",
+  "//productName": "Top level on purpose. Electron's app.getName() reads the top-level productName and falls back to `name` — it does not look inside the electron-builder `build` block. Without this the app called itself @skiff/desktop, so app.getPath('userData') resolved to %APPDATA%\\@skiff/desktop: a path containing a forward slash. Chromium could not create its cache there, which fails file:// loads with a bare ERR_FAILED and left the window blank on every packaged install.",
+  "productName": "Skiff",
   "version": "1.0.0",
   "license": "AGPL-3.0-only",
   "description": "Skiff desktop application — native SSH connection manager and access governance.",
